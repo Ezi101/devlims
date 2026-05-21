@@ -1,0 +1,26 @@
+<?php
+return [
+    'capa_title' => 'CAPA',
+    'capa_manage' => 'Manage CAPA',
+    'capa_sr' => 'Sr',
+    'capa_date' => 'Date',
+    'capa_type' => 'Type',
+    'capa_desc' => 'Description',
+    'capa_assign' => 'Assigned To',
+    'capa_status' => 'Status',
+    'capa_issue' => 'Total Issued',
+    'capa_progress' => 'Total In Progress',
+    'capa_completed' => 'Total Completed',
+    'capa_deleted' => 'CAPA deleted successfully',
+    'capa_corrective' => 'Corrective',
+    'capa_preventive' => 'Preventive',
+    'today_sample' => 'Today Sample',
+    'today_test' => 'Today Test',
+    'today_completed' => 'Today Completed',
+    'today_pending' => 'Today Pending',
+    'capa_pending' => 'Total Pending',
+    'total_sample' => 'Total Sample',
+    'total_test' => 'Total Test',
+    'assign_day' => 'Assigned Days',
+
+];
