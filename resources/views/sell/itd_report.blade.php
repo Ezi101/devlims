@@ -235,9 +235,10 @@
                             <th>Accepted<br>by AFIMS</th>
                             <th>Bulk<br>Stamping U/P</th>
                             <th>IEI Date</th>
+                            <th>I Note<br>Date</th>
+                            <th>E/U Opinion<br>Awaited</th>
                             <th>Case<br>Ref</th>
                             <th>Bal<br>U/Process</th>
-                            <th>E/U Opinion<br>Awaited</th>
                         </tr>
                     </thead>
                     <tbody id="itd_summary_body">
@@ -352,7 +353,7 @@
                         $('#itd_summary_loading').hide();
                         $('#itd_summary_table').show();
                         $('#itd_summary_body').html(
-                            '<tr><td colspan="16" class="text-center text-danger">Error loading data.</td></tr>'
+                            '<tr><td colspan="17" class="text-center text-danger">Error loading data.</td></tr>'
                         );
                     }
                 });
@@ -375,7 +376,8 @@
                     shipment: 0,
                     eu: 0,
                     case_ref: 0,
-                    iei: 0
+                    iei: 0,
+                    i_note: 0,
                 };
 
                 categories.forEach(function(cat, ci) {
@@ -392,7 +394,8 @@
                         shipment: 0,
                         eu: 0,
                         case_ref: 0,
-                        iei: 0
+                        iei: 0,
+                        i_note: 0,
                     };
 
                     locations.forEach(function(loc, li) {
@@ -412,6 +415,7 @@
                         catTotals.eu += (row.eu || 0);
                         catTotals.case_ref += (row.case_ref || 0);
                         catTotals.iei += (row.iei || 0);
+                        catTotals.i_note += (row.i_note || 0);
 
                         html += '<tr class="loc-row">';
 
@@ -440,6 +444,7 @@
                         html += '<td>' + (row.case_ref || 0) + '</td>';
                         html += '<td>' + (row.bal || 0) + '</td>';
                         html += '<td>' + (row.eu || 0) + '</td>';
+                        html += '<td>' + (row.i_note || 0) + '</td>';
                         html += '</tr>';
                     });
 
@@ -459,6 +464,7 @@
                     html += '<td><b>' + catTotals.case_ref + '</b></td>';
                     html += '<td><b>' + catTotals.bal + '</b></td>';
                     html += '<td><b>' + catTotals.eu + '</b></td>';
+                    html += '<td><b>' + catTotals.i_note + '</b></td>';
                     html += '</tr>';
 
                     Object.keys(grandTotal).forEach(function(k) {
@@ -482,6 +488,7 @@
                 html += '<td><b>' + grandTotal.case_ref + '</b></td>';
                 html += '<td><b>' + grandTotal.bal + '</b></td>';
                 html += '<td><b>' + grandTotal.eu + '</b></td>';
+                html += '<td><b>' + grandTotal.i_note + '</b></td>';
                 html += '</tr>';
 
                 $('#itd_summary_body').html(html);
