@@ -5128,7 +5128,7 @@ class SellController extends Controller
                     }
 
                     // ✅ Stage 6: Under Shipment — sampling date di gayi to yahan aaye
-                    if ($sampling) {
+                    if ($sampling && !$shipment) {
                         $result[$key]['shipment']++;
                     }
 
