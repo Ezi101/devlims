@@ -5378,16 +5378,20 @@ class SellController extends Controller
                     if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
 
                     // ✅ Bulk Stamping — acceptance letter hai, bulk date nahi, IEI nahi
-                    if ($accepted && !$bulk && !$iei)               $result[$key]['bulk']++;
+                    // if ($accepted && !$bulk && !$iei)               $result[$key]['bulk']++;
 
-                    // ✅ IEI Date — bulk stamping di, IEI nahi
-                    if ($bulk && !$iei)                             $result[$key]['iei']++;
+                    // // ✅ IEI Date — bulk stamping di, IEI nahi
+                    // if ($bulk && !$iei)                             $result[$key]['iei']++;
 
-                    // ✅ I Note Date — IEI di, I Note nahi
-                    if ($iei && !$iNote)      $result[$key]['i_note']++;
+                    // // ✅ I Note Date — IEI di, I Note nahi
+                    // if ($iei && !$iNote)      $result[$key]['i_note']++;
 
-                    if ($eu)                                        $result[$key]['eu']++;
-                    if ($caseRef)                                   $result[$key]['case_ref']++;
+                    // if ($eu)                                        $result[$key]['eu']++;
+                    // if ($caseRef)                                   $result[$key]['case_ref']++;
+                    if ($accepted && !$bulk && !$iei)   $result[$key]['bulk']++;   // Bulk pending
+                    if ($bulk && !$iei)                 $result[$key]['iei']++;    // IEI pending
+                    if ($iei && !$iNote)                $result[$key]['i_note']++; // I Note pending
+                    if ($iNote && !$eu)                 $result[$key]['eu']++;
                 }
             }
 

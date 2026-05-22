@@ -459,6 +459,7 @@
                             html += '<td class="cat-cell" rowspan="' +
                                 (locations.length + 1) + '">' + cat + '</td>';
                         }
+                        html += '<td><b>' + loc + '</b></td>';
                         html += '<td>' + (row.total || 0) + '</td>';
                         html += '<td>' + (row.offered || 0) + '</td>';
                         html += '<td>' + (row.not_offered || 0) + '</td>';
@@ -469,14 +470,16 @@
                         html += '<td>' + (row.accepted || 0) + '</td>';
                         html += '<td>' + (row.bulk || 0) + '</td>';
                         html += '<td>' + (row.iei || 0) + '</td>';
-                        html += '<td>' + (row.i_note || 0) + '</td>'; // ✅
-                        html += '<td>' + (row.eu || 0) + '</td>'; // ✅
-                        html += '<td>' + (row.case_ref || 0) + '</td>'; // ✅
-                        html += '<td>' + (row.bal || 0) + '</td>'; // ✅
+                        html += '<td>' + (row.case_ref || 0) + '</td>';
+                        html += '<td>' + (row.bal || 0) + '</td>';
+                        html += '<td>' + (row.eu || 0) + '</td>';
+                        html += '<td>' + (row.i_note || 0) + '</td>';
                         html += '</tr>';
                     });
 
                     // Category Total Row
+                    html += '<tr class="total-row">';
+                    html += '<td><b>' + cat + ' Total</b></td>';
                     html += '<td><b>' + catTotals.total + '</b></td>';
                     html += '<td><b>' + catTotals.offered + '</b></td>';
                     html += '<td><b>' + catTotals.not_offered + '</b></td>';
@@ -487,10 +490,10 @@
                     html += '<td><b>' + catTotals.accepted + '</b></td>';
                     html += '<td><b>' + catTotals.bulk + '</b></td>';
                     html += '<td><b>' + catTotals.iei + '</b></td>';
-                    html += '<td><b>' + catTotals.i_note + '</b></td>'; // ✅
-                    html += '<td><b>' + catTotals.eu + '</b></td>'; // ✅
-                    html += '<td><b>' + catTotals.case_ref + '</b></td>'; // ✅
-                    html += '<td><b>' + catTotals.bal + '</b></td>'; // ✅
+                    html += '<td><b>' + catTotals.case_ref + '</b></td>';
+                    html += '<td><b>' + catTotals.bal + '</b></td>';
+                    html += '<td><b>' + catTotals.eu + '</b></td>';
+                    html += '<td><b>' + catTotals.i_note + '</b></td>';
                     html += '</tr>';
 
                     Object.keys(grandTotal).forEach(function(k) {
@@ -499,6 +502,8 @@
                 });
 
                 // Grand Total Row
+                html += '<tr style="background-color:#d5e8d4; font-weight:700; border-top:3px solid #2980b9;">';
+                html += '<td colspan="3"><b>Grand Total</b></td>';
                 html += '<td><b>' + grandTotal.total + '</b></td>';
                 html += '<td><b>' + grandTotal.offered + '</b></td>';
                 html += '<td><b>' + grandTotal.not_offered + '</b></td>';
@@ -509,10 +514,10 @@
                 html += '<td><b>' + grandTotal.accepted + '</b></td>';
                 html += '<td><b>' + grandTotal.bulk + '</b></td>';
                 html += '<td><b>' + grandTotal.iei + '</b></td>';
-                html += '<td><b>' + grandTotal.i_note + '</b></td>'; // ✅
-                html += '<td><b>' + grandTotal.eu + '</b></td>'; // ✅
-                html += '<td><b>' + grandTotal.case_ref + '</b></td>'; // ✅
-                html += '<td><b>' + grandTotal.bal + '</b></td>'; // ✅
+                html += '<td><b>' + grandTotal.case_ref + '</b></td>';
+                html += '<td><b>' + grandTotal.bal + '</b></td>';
+                html += '<td><b>' + grandTotal.eu + '</b></td>';
+                html += '<td><b>' + grandTotal.i_note + '</b></td>';
                 html += '</tr>';
 
                 $('#itd_summary_body').html(html);
