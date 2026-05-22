@@ -5390,9 +5390,8 @@ class SellController extends Controller
                     // if ($caseRef)                                   $result[$key]['case_ref']++;
                     if ($accepted && !$bulk && !$iei)   $result[$key]['bulk']++;   // Bulk pending
                     if ($bulk && !$iei)                 $result[$key]['iei']++;    // IEI pending
-                    if ($iei && !$iNote)               $result[$key]['iei']++;    // IEI Date — IEI aayi, I Note nahi
-                    if ($iNote && !$eu)                $result[$key]['i_note']++; // I Note Date — I Note aayi, EU nahi
-                    if ($eu)                           $result[$key]['eu']++;
+                    if ($iei && !$iNote)                $result[$key]['i_note']++; // I Note pending
+                    if ($eu)                 $result[$key]['eu']++;
                 }
             }
 
