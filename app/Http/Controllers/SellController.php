@@ -5335,17 +5335,17 @@ class SellController extends Controller
                     $caseRef  = !empty($inst['case_ref_date']);
                     $iNote    = !empty($inst['i_note_date']);
 
-                    if (!$offered)                              $result[$key]['not_offered']++;
-                    if ($offered)                               $result[$key]['offered']++;
-                    if ($accepted || $isStrApproved)            $result[$key]['accepted']++;
-                    if ($offered && !$accepted && !$isStrApproved) $result[$key]['sampling']++;
-                    if ($sampling && !$isReceivedByAfmsl)       $result[$key]['shipment']++;
-                    if ($isReceivedByAfmsl && !$isStrApproved)  $result[$key]['testing']++;
-                    if ($accepted && !$iei)                     $result[$key]['bulk']++;
-                    if ($iei && !$iNote)                        $result[$key]['iei']++;
-                    if ($iNote)                                 $result[$key]['i_note']++;
-                    if ($eu)                                    $result[$key]['eu']++;
-                    if ($caseRef)                               $result[$key]['case_ref']++;
+                    if (!$offered)                                  $result[$key]['not_offered']++;
+                    if ($offered)                                   $result[$key]['offered']++;
+                    if ($isStrApproved)                             $result[$key]['accepted']++;   // ✅ sirf STR approved pe accepted
+                    if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;   // offered lekin acceptance nahi
+                    if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
+                    if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
+                    if ($accepted && !$iei)                         $result[$key]['bulk']++;        // ✅ acceptance letter → bulk
+                    if ($iei && !$iNote)                            $result[$key]['iei']++;
+                    if ($iNote)                                     $result[$key]['i_note']++;
+                    if ($eu)                                        $result[$key]['eu']++;
+                    if ($caseRef)                                   $result[$key]['case_ref']++;
                 }
             }
 
