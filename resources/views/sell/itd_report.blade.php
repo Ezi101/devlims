@@ -193,6 +193,7 @@
                                 ]) !!}
                             </div>
                         </div>
+
                         {{-- Fiscal Year --}}
                         <div class="col-md-2">
                             <div class="form-group">
@@ -208,8 +209,6 @@
                 </div>
             </div>
         </div>
-
-
 
         {{-- ITD Summary Table --}}
         <div class="box box-primary" id="itd_table_wrapper" style="display:none;">
@@ -288,10 +287,8 @@
                 '12': 'December'
             };
 
-            // ✅ Page load pe current year set karo
             $('#dd_year_filter').val(currentYear);
 
-            // ✅ Fiscal years load karo
             function loadFiscalYears() {
                 $.ajax({
                     url: '/fiscal-years-list',
@@ -304,26 +301,22 @@
                         });
                         $('#fiscal_year_filter').html(options);
                         $('#fiscal_year_filter').trigger('change.select2');
-                        // ✅ Fiscal year load hone ke baad summary cards load karo
                         loadSummaryCards();
                     }
                 });
             }
 
-            // ✅ DD Month change
             $('#dd_month_filter').on('change', function() {
                 $('#dd_year_filter').val(currentYear);
                 loadSummaryCards();
                 loadITDSummary();
             });
 
-            // ✅ Baqi filters — sab ek jagah
             $('#contract_type_filter, #category_filter, #fiscal_year_filter').on('change', function() {
                 loadSummaryCards();
                 loadITDSummary();
             });
 
-            // ✅ Summary Cards
             function loadSummaryCards() {
                 $.ajax({
                     url: '/e-planner-summary',
@@ -349,7 +342,6 @@
                 });
             }
 
-            // ✅ ITD Summary Table
             function loadITDSummary() {
                 var month = $('#dd_month_filter').val();
                 var year = $('#dd_year_filter').val();
@@ -390,7 +382,6 @@
                 });
             }
 
-            // ✅ Render Table
             function renderITDSummary(data, monthLabel) {
                 var html = '';
                 var categories = ['Medicine', 'Disposable'];
@@ -460,20 +451,20 @@
                                 (locations.length + 1) + '">' + cat + '</td>';
                         }
                         html += '<td><b>' + loc + '</b></td>';
-                        html += '<td>' + (row.total || 0) + '</td>';
-                        html += '<td>' + (row.offered || 0) + '</td>';
-                        html += '<td>' + (row.not_offered || 0) + '</td>';
-                        html += '<td>' + (row.cancelled || 0) + '</td>';
-                        html += '<td>' + (row.sampling || 0) + '</td>';
-                        html += '<td>' + (row.shipment || 0) + '</td>';
-                        html += '<td>' + (row.testing || 0) + '</td>';
-                        html += '<td>' + (row.accepted || 0) + '</td>';
-                        html += '<td>' + (row.bulk || 0) + '</td>';
-                        html += '<td>' + (row.iei || 0) + '</td>';
-                        html += '<td>' + (row.case_ref || 0) + '</td>';
-                        html += '<td>' + (row.bal || 0) + '</td>';
-                        html += '<td>' + (row.eu || 0) + '</td>';
-                        html += '<td>' + (row.i_note || 0) + '</td>';
+                        html += '<td>' + (row.total || 0) + '</td>'; // Total Contr
+                        html += '<td>' + (row.offered || 0) + '</td>'; // Offered
+                        html += '<td>' + (row.not_offered || 0) + '</td>'; // Not Offered
+                        html += '<td>' + (row.cancelled || 0) + '</td>'; // Offer Ltr Cancelled
+                        html += '<td>' + (row.sampling || 0) + '</td>'; // Under Sampling
+                        html += '<td>' + (row.shipment || 0) + '</td>'; // Under Shipment
+                        html += '<td>' + (row.testing || 0) + '</td>'; // Testing U/P
+                        html += '<td>' + (row.accepted || 0) + '</td>'; // Accepted by AFIMS
+                        html += '<td>' + (row.bulk || 0) + '</td>'; // Bulk Stamping U/P
+                        html += '<td>' + (row.iei || 0) + '</td>'; // IEI Date       ✅
+                        html += '<td>' + (row.i_note || 0) + '</td>'; // I Note Date    ✅
+                        html += '<td>' + (row.eu || 0) + '</td>'; // E/U Opinion    ✅
+                        html += '<td>' + (row.case_ref || 0) + '</td>'; // Case Ref       ✅
+                        html += '<td>' + (row.bal || 0) + '</td>'; // Bal U/Process  ✅
                         html += '</tr>';
                     });
 
@@ -489,11 +480,11 @@
                     html += '<td><b>' + catTotals.testing + '</b></td>';
                     html += '<td><b>' + catTotals.accepted + '</b></td>';
                     html += '<td><b>' + catTotals.bulk + '</b></td>';
-                    html += '<td><b>' + catTotals.iei + '</b></td>';
-                    html += '<td><b>' + catTotals.case_ref + '</b></td>';
-                    html += '<td><b>' + catTotals.bal + '</b></td>';
-                    html += '<td><b>' + catTotals.eu + '</b></td>';
-                    html += '<td><b>' + catTotals.i_note + '</b></td>';
+                    html += '<td><b>' + catTotals.iei + '</b></td>'; // IEI Date    ✅
+                    html += '<td><b>' + catTotals.i_note + '</b></td>'; // I Note Date ✅
+                    html += '<td><b>' + catTotals.eu + '</b></td>'; // E/U Opinion ✅
+                    html += '<td><b>' + catTotals.case_ref + '</b></td>'; // Case Ref    ✅
+                    html += '<td><b>' + catTotals.bal + '</b></td>'; // Bal         ✅
                     html += '</tr>';
 
                     Object.keys(grandTotal).forEach(function(k) {
@@ -513,17 +504,16 @@
                 html += '<td><b>' + grandTotal.testing + '</b></td>';
                 html += '<td><b>' + grandTotal.accepted + '</b></td>';
                 html += '<td><b>' + grandTotal.bulk + '</b></td>';
-                html += '<td><b>' + grandTotal.iei + '</b></td>';
-                html += '<td><b>' + grandTotal.case_ref + '</b></td>';
-                html += '<td><b>' + grandTotal.bal + '</b></td>';
-                html += '<td><b>' + grandTotal.eu + '</b></td>';
-                html += '<td><b>' + grandTotal.i_note + '</b></td>';
+                html += '<td><b>' + grandTotal.iei + '</b></td>'; // IEI Date    ✅
+                html += '<td><b>' + grandTotal.i_note + '</b></td>'; // I Note Date ✅
+                html += '<td><b>' + grandTotal.eu + '</b></td>'; // E/U Opinion ✅
+                html += '<td><b>' + grandTotal.case_ref + '</b></td>'; // Case Ref    ✅
+                html += '<td><b>' + grandTotal.bal + '</b></td>'; // Bal         ✅
                 html += '</tr>';
 
                 $('#itd_summary_body').html(html);
             }
 
-            // ✅ Print button
             $('#btn_print_summary').on('click', function() {
                 var month = $('#dd_month_filter').val();
                 var year = $('#dd_year_filter').val();
@@ -541,7 +531,6 @@
                 window.open('/itd-summary-print?' + params.toString(), '_blank');
             });
 
-            // ✅ Page load pe fiscal years fetch karo
             loadFiscalYears();
         });
     </script>
