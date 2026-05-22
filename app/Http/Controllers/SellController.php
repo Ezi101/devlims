@@ -5101,6 +5101,7 @@ class SellController extends Controller
                     $caseRef  = !empty($inst['case_ref_date']);
 
                     // Stage 1: Not Offered
+                    // Stage 1: Not Offered
                     if (!$offered) {
                         $result[$key]['not_offered']++;
                     }
@@ -5120,27 +5121,25 @@ class SellController extends Controller
                         $result[$key]['accepted']++;
                     }
 
-                    // Stage 5: Under Sampling — sampling hai lekin offering nahi
-                    if ($sampling && !$offered) {
+                    // ✅ Stage 5: Under Sampling — offered date di gayi hai
+                    // (sampling date nahi chahiye, sirf offering se yahan aaye)
+                    if ($offered && !$sampling) {
                         $result[$key]['sampling']++;
                     }
 
-                    // Stage 6: Bulk Stamping U/P — bulk hai lekin IEI nahi
+                    // ✅ Stage 6: Under Shipment — sampling date di gayi to yahan aaye
+                    if ($sampling) {
+                        $result[$key]['shipment']++;
+                    }
+
+                    // Stage 7: Bulk Stamping U/P
                     if ($bulk && !$iei) {
                         $result[$key]['bulk']++;
                     }
 
-                    // ✅ Stage 7: Testing U/P
-                    // Sirf tab count ho jab transaction mein
-                    // "Received by AFMSL" status ho aur IEI nahi hua
+                    // Stage 8: Testing U/P
                     if ($isReceivedByAfmsl && !$iei) {
                         $result[$key]['testing']++;
-                    }
-
-                    // ✅ Stage 8: Under Shipment
-                    // Shipment date hai lekin "Received by AFMSL" abhi nahi hua
-                    if ($shipment && !$isReceivedByAfmsl) {
-                        $result[$key]['shipment']++;
                     }
 
                     // Stage 9: E/U Opinion Awaited
