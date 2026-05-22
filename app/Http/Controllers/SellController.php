@@ -5031,6 +5031,11 @@ class SellController extends Controller
                 ->whereNotNull('d_rcv_by_afmsl')
                 ->pluck('contract_no')  // contract_id → contract_no
                 ->toArray();
+            $strApprovedContractIds = DB::table('s_t_r')
+                ->whereNotNull('approved_by')
+                ->whereNotNull('approved_at')
+                ->pluck('contract_no') // ← apna actual foreign key field confirm karo
+                ->toArray();
 
             $result = [];
             $locations  = ['Kcl', 'Lhr', 'Rwp'];
@@ -5077,6 +5082,7 @@ class SellController extends Controller
 
                 // Check: is contract ki koi transaction "Received by AFMSL" hai?
                 $isReceivedByAfmsl = in_array($contract->id, $receivedContractIds);
+                $isStrApproved      = in_array($contract->id, $strApprovedContractIds);
 
                 foreach ($instDates as $inst) {
                     $ddDate = $inst['dd_date'] ?? null;
@@ -5111,52 +5117,61 @@ class SellController extends Controller
                         $result[$key]['offered']++;
                     }
 
-                    // Stage 3: Bal U/Process — offered hai lekin accepted nahi
-                    if ($offered && !$accepted) {
-                        $result[$key]['bal']++;
-                    }
-
-                    // Stage 4: Accepted by AFIMS
-                    if ($accepted) {
+                    // Stage 3: Accepted by AFIMS
+                    if ($accepted || $isStrApproved) {
                         $result[$key]['accepted']++;
                     }
 
-                    // Stage 5: Under Sampling — offered date di gayi hai lekin sampling nahi
+                    // Stage 4: Under Sampling — offered date di gayi hai lekin sampling nahi
                     if ($offered && !$sampling) {
                         $result[$key]['sampling']++;
                     }
 
-                    // ✅ Stage 6: Under Shipment — sampling di gayi ho
+                    // ✅ Stage 5: Under Shipment — sampling di gayi ho
                     // lekin "Received by AFMSL" abhi nahi hua
                     if ($sampling && !$isReceivedByAfmsl) {
                         $result[$key]['shipment']++;
                     }
 
-                    // ✅ Stage 7: Testing U/P — Received by AFMSL ho gaya
+                    // ✅ Stage 6: Testing U/P — Received by AFMSL ho gaya
                     // lekin IEI abhi nahi hua
-                    if ($isReceivedByAfmsl && !$iei) {
+                    if ($isReceivedByAfmsl && !$isStrApproved && !$iei) {
                         $result[$key]['testing']++;
                     }
 
-                    // Stage 8: Bulk Stamping U/P
+                    // Stage 7: Bulk Stamping U/P
                     if ($bulk && !$iei) {
                         $result[$key]['bulk']++;
                     }
 
-                    // Stage 9: E/U Opinion Awaited
+                    // Stage 8: E/U Opinion Awaited
                     if ($eu) {
                         $result[$key]['eu']++;
                     }
 
-                    // Stage 10: Case Ref
+                    // Stage 9: Case Ref
                     if ($caseRef) {
                         $result[$key]['case_ref']++;
                     }
 
-                    // Stage 11: IEI Date
+                    // Stage 10: IEI Date
                     if ($iei) {
                         $result[$key]['iei']++;
                     }
+                }
+            }
+            foreach ($categories as $cat) {
+                foreach ($locations as $loc) {
+                    $key = $cat . '_' . $loc;
+                    $result[$key]['bal'] =
+                        $result[$key]['sampling'] +
+                        $result[$key]['shipment'] +
+                        $result[$key]['testing'] +
+                        $result[$key]['accepted'] +
+                        $result[$key]['bulk'] +
+                        $result[$key]['iei'] +
+                        $result[$key]['case_ref'] +
+                        $result[$key]['eu'];
                 }
             }
 
