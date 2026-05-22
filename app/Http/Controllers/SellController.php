@@ -5362,36 +5362,32 @@ class SellController extends Controller
                     $caseRef  = !empty($inst['case_ref_date']);
                     $iNote    = !empty($inst['i_note_date']);
 
-                    // if (!$offered)                                  $result[$key]['not_offered']++;
-                    // if ($offered)                                   $result[$key]['offered']++;
-                    // if ($isStrApproved)                             $result[$key]['accepted']++;
-                    // if (!$offered && $accepted && !$isStrApproved)  $result[$key]['sampling']++;
-                    // if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
-                    // if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
-                    // if ($accepted && !$isStrApproved && !$iei)      $result[$key]['bulk']++;
-                    // if ($iei && !$iNote)                            $result[$key]['iei']++;
-                    // if ($iNote)                                     $result[$key]['i_note']++;
-                    // if ($eu)                                        $result[$key]['eu']++;
-                    // if ($caseRef)                                   $result[$key]['case_ref']++;
-                    if (!$offered)                                      $result[$key]['not_offered']++;
-                    if ($offered)                                       $result[$key]['offered']++;
+                    if (!$offered)                                  $result[$key]['not_offered']++;
+                    if ($offered)                                   $result[$key]['offered']++;
 
                     // ✅ Accepted — STR approved ho lekin acceptance letter NA ho
-                    if ($isStrApproved && !$accepted)                   $result[$key]['accepted']++;
+                    if ($isStrApproved && !$accepted)               $result[$key]['accepted']++;
 
-                    // Under Sampling — offered hai lekin acceptance letter nahi
-                    if ($offered && !$accepted && !$isStrApproved)      $result[$key]['sampling']++;
+                    // ✅ Under Sampling — offered hai, acceptance letter nahi
+                    if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;
 
-                    if ($sampling && !$isReceivedByAfmsl)               $result[$key]['shipment']++;
-                    if ($isReceivedByAfmsl && !$isStrApproved)          $result[$key]['testing']++;
+                    // ✅ Under Shipment
+                    if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
 
-                    // ✅ Bulk Stamping — acceptance letter aa gayi (STR approved ho ya na ho, IEI nahi)
-                    if ($accepted && !$iei)                             $result[$key]['bulk']++;
+                    // ✅ Testing U/P
+                    if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
 
-                    if ($iei && !$iNote)                                $result[$key]['iei']++;
-                    if ($iNote)                                         $result[$key]['i_note']++;
-                    if ($eu)                                            $result[$key]['eu']++;
-                    if ($caseRef)                                       $result[$key]['case_ref']++;
+                    // ✅ Bulk Stamping — acceptance letter hai, bulk date nahi, IEI nahi
+                    if ($accepted && !$bulk && !$iei)               $result[$key]['bulk']++;
+
+                    // ✅ IEI Date — bulk stamping di, IEI nahi
+                    if ($bulk && !$iei)                             $result[$key]['iei']++;
+
+                    // ✅ I Note Date — IEI di, I Note nahi
+                    if ($iei && !$iNote)                            $result[$key]['i_note']++;
+
+                    if ($eu)                                        $result[$key]['eu']++;
+                    if ($caseRef)                                   $result[$key]['case_ref']++;
                 }
             }
 
