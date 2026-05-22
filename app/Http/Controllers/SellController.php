@@ -5338,7 +5338,7 @@ class SellController extends Controller
                     if (!$offered)                              $result[$key]['not_offered']++;
                     if ($offered)                               $result[$key]['offered']++;
                     if ($accepted || $isStrApproved)            $result[$key]['accepted']++;
-                    if ($offered && !$accepted)                 $result[$key]['sampling']++;
+                    if ($offered && !$accepted && !$isStrApproved) $result[$key]['sampling']++;
                     if ($sampling && !$isReceivedByAfmsl)       $result[$key]['shipment']++;
                     if ($isReceivedByAfmsl && !$isStrApproved)  $result[$key]['testing']++;
                     if ($accepted && !$iei)                     $result[$key]['bulk']++;
