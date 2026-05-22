@@ -5384,7 +5384,7 @@ class SellController extends Controller
                     if ($bulk && !$iei)                             $result[$key]['iei']++;
 
                     // ✅ I Note Date — IEI di, I Note nahi
-                    if ($iei && !$iNote)                            $result[$key]['i_note']++;
+                    if ($iei && !$iNote)      $result[$key]['i_note']++;
 
                     if ($eu)                                        $result[$key]['eu']++;
                     if ($caseRef)                                   $result[$key]['case_ref']++;
