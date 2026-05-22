@@ -5362,13 +5362,30 @@ class SellController extends Controller
                     $caseRef  = !empty($inst['case_ref_date']);
                     $iNote    = !empty($inst['i_note_date']);
 
+                    // if (!$offered)                                  $result[$key]['not_offered']++;
+                    // if ($offered)                                   $result[$key]['offered']++;
+                    // if ($isStrApproved)                             $result[$key]['accepted']++;
+                    // if (!$offered && $accepted && !$isStrApproved)  $result[$key]['sampling']++;
+                    // if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
+                    // if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
+                    // if ($accepted && !$isStrApproved && !$iei)      $result[$key]['bulk']++;
+                    // if ($iei && !$iNote)                            $result[$key]['iei']++;
+                    // if ($iNote)                                     $result[$key]['i_note']++;
+                    // if ($eu)                                        $result[$key]['eu']++;
+                    // if ($caseRef)                                   $result[$key]['case_ref']++;
                     if (!$offered)                                  $result[$key]['not_offered']++;
                     if ($offered)                                   $result[$key]['offered']++;
-                    if ($isStrApproved)                             $result[$key]['accepted']++;
+
+                    // ✅ Accepted by AFIMS — acceptance letter YA STR approved
+                    if ($accepted || $isStrApproved)                $result[$key]['accepted']++;
+
                     if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;
                     if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
                     if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
+
+                    // ✅ Bulk Stamping — acceptance letter hai lekin STR approved nahi aur IEI nahi
                     if ($accepted && !$isStrApproved && !$iei)      $result[$key]['bulk']++;
+
                     if ($iei && !$iNote)                            $result[$key]['iei']++;
                     if ($iNote)                                     $result[$key]['i_note']++;
                     if ($eu)                                        $result[$key]['eu']++;
