@@ -752,6 +752,14 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/e-planner/view/{id}', [App\Http\Controllers\SellController::class, 'showEPlannerDashboard'])->name('e_planner.dashboard');
     Route::get('/itd-report', [SellController::class, 'itdReport']);
     Route::get('/itd-summary-table', [SellController::class, 'itdSummaryTable']);
+    // Route
+    Route::get('/fiscal-years-list', function () {
+        $fy = DB::table('fiscal_years')
+            ->whereNull('deleted_at')
+            ->orderBy('start_year', 'desc')
+            ->get(['id', 'name', 'start_year', 'end_year', 'is_active']);
+        return response()->json($fy);
+    });
 
     Route::resource('reagents', ReagentController::class);
     Route::get('/reagent/issue_record', [ReagentController::class, 'issue_record']);

@@ -5222,11 +5222,39 @@ class SellController extends Controller
             }
 
             // ✅ Sirf zaroorat ke columns fetch karo
+            // $contracts = DB::table('contracts')
+            //     ->leftJoin('products as p', 'contracts.sample_id', '=', 'p.id')
+            //     ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
+            //     ->where('contracts.business_id', $business_id)
+            //     ->where('contracts.type', 'supply')
+            //     ->select(
+            //         'contracts.id',
+            //         'contracts.loc',
+            //         'contracts.installment_dates',
+            //         'cat.name as category_name'
+            //     )
+            //     ->get();
+            // ✅ Fiscal years DB se fetch karo
+            $fiscalYears = DB::table('fiscal_years')
+                ->whereNull('deleted_at')
+                ->orderBy('start_year', 'desc')
+                ->get();
+
+            // ✅ Fiscal year filter
+            $fiscalYearId = $request->input('fiscal_year_id');
+
             $contracts = DB::table('contracts')
                 ->leftJoin('products as p', 'contracts.sample_id', '=', 'p.id')
                 ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
                 ->where('contracts.business_id', $business_id)
-                ->where('contracts.type', 'supply')
+                ->where('contracts.type', $request->input('contract_type') ?: 'supply')
+                ->when($request->input('category_id'), function ($query) use ($request) {
+                    $query->where('cat.name', $request->input('category_id'));
+                })
+                // ✅ Fiscal year filter
+                ->when($fiscalYearId, function ($query) use ($fiscalYearId) {
+                    $query->where('contracts.fiscal_year_id', $fiscalYearId);
+                })
                 ->select(
                     'contracts.id',
                     'contracts.loc',
@@ -5235,7 +5263,6 @@ class SellController extends Controller
                 )
                 ->get();
 
-            // ✅ Indexed arrays — in_array() ki jagah isset() use karo (10x fast)
             // ✅ Fix 1: Received by AFMSL
             $receivedContractIds = array_flip(
                 array_filter(
@@ -5337,11 +5364,11 @@ class SellController extends Controller
 
                     if (!$offered)                                  $result[$key]['not_offered']++;
                     if ($offered)                                   $result[$key]['offered']++;
-                    if ($isStrApproved)                             $result[$key]['accepted']++;   // ✅ sirf STR approved pe accepted
-                    if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;   // offered lekin acceptance nahi
+                    if ($isStrApproved)                             $result[$key]['accepted']++;
+                    if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;
                     if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
                     if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
-                    if ($accepted && !$iei)                         $result[$key]['bulk']++;        // ✅ acceptance letter → bulk
+                    if ($accepted && !$isStrApproved && !$iei)      $result[$key]['bulk']++;
                     if ($iei && !$iNote)                            $result[$key]['iei']++;
                     if ($iNote)                                     $result[$key]['i_note']++;
                     if ($eu)                                        $result[$key]['eu']++;

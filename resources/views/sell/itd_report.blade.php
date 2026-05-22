@@ -193,6 +193,16 @@
                                 ]) !!}
                             </div>
                         </div>
+                        {{-- Fiscal Year --}}
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                {!! Form::label('fiscal_year_filter', 'Fiscal Year:') !!}
+                                <select name="fiscal_year_filter" id="fiscal_year_filter"
+                                    class="form-control select2 filter_select" style="width:100%">
+                                    <option value="">All Years</option>
+                                </select>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
@@ -278,23 +288,42 @@
                 '12': 'December'
             };
 
-            // ✅ Page load pe current year set karo hidden field mein
+            // ✅ Page load pe current year set karo
             $('#dd_year_filter').val(currentYear);
 
-            // ✅ DD Month change hone par year auto-set
+            // ✅ Fiscal years load karo
+            function loadFiscalYears() {
+                $.ajax({
+                    url: '/fiscal-years-list',
+                    success: function(data) {
+                        var options = '<option value="">All Years</option>';
+                        data.forEach(function(fy) {
+                            var selected = fy.is_active == 1 ? 'selected' : '';
+                            options += '<option value="' + fy.id + '" ' + selected + '>' +
+                                fy.name + '</option>';
+                        });
+                        $('#fiscal_year_filter').html(options);
+                        $('#fiscal_year_filter').trigger('change.select2');
+                        // ✅ Fiscal year load hone ke baad summary cards load karo
+                        loadSummaryCards();
+                    }
+                });
+            }
+
+            // ✅ DD Month change
             $('#dd_month_filter').on('change', function() {
                 $('#dd_year_filter').val(currentYear);
                 loadSummaryCards();
                 loadITDSummary();
             });
 
-            // Baqi filters ka change
-            $('#contract_type_filter, #category_filter').on('change', function() {
+            // ✅ Baqi filters — sab ek jagah
+            $('#contract_type_filter, #category_filter, #fiscal_year_filter').on('change', function() {
                 loadSummaryCards();
                 loadITDSummary();
             });
 
-            // Summary Cards
+            // ✅ Summary Cards
             function loadSummaryCards() {
                 $.ajax({
                     url: '/e-planner-summary',
@@ -304,6 +333,7 @@
                         category_id: $('#category_filter').val(),
                         dd_month: $('#dd_month_filter').val(),
                         dd_year: $('#dd_year_filter').val(),
+                        fiscal_year_id: $('#fiscal_year_filter').val(),
                     },
                     success: function(data) {
                         $('#total_contracts').text(data.total || 0);
@@ -319,7 +349,7 @@
                 });
             }
 
-            // ITD Summary Table
+            // ✅ ITD Summary Table
             function loadITDSummary() {
                 var month = $('#dd_month_filter').val();
                 var year = $('#dd_year_filter').val();
@@ -343,6 +373,7 @@
                         dd_year: year,
                         contract_type: $('#contract_type_filter').val(),
                         category_id: $('#category_filter').val(),
+                        fiscal_year_id: $('#fiscal_year_filter').val(),
                     },
                     success: function(data) {
                         renderITDSummary(data, monthNames[month] + ' ' + year);
@@ -359,6 +390,7 @@
                 });
             }
 
+            // ✅ Render Table
             function renderITDSummary(data, monthLabel) {
                 var html = '';
                 var categories = ['Medicine', 'Disposable'];
@@ -418,18 +450,15 @@
                         catTotals.i_note += (row.i_note || 0);
 
                         html += '<tr class="loc-row">';
-
                         if (ci === 0 && li === 0) {
                             html += '<td class="dp-cell" rowspan="' +
                                 (categories.length * (locations.length + 1)) +
                                 '">' + monthLabel + '</td>';
                         }
-
                         if (li === 0) {
                             html += '<td class="cat-cell" rowspan="' +
                                 (locations.length + 1) + '">' + cat + '</td>';
                         }
-
                         html += '<td><b>' + loc + '</b></td>';
                         html += '<td>' + (row.total || 0) + '</td>';
                         html += '<td>' + (row.offered || 0) + '</td>';
@@ -450,7 +479,7 @@
 
                     // Category Total Row
                     html += '<tr class="total-row">';
-                    html += '<td colspan="2"><b>' + cat + ' Total</b></td>';
+                    html += '<td><b>' + cat + ' Total</b></td>';
                     html += '<td><b>' + catTotals.total + '</b></td>';
                     html += '<td><b>' + catTotals.offered + '</b></td>';
                     html += '<td><b>' + catTotals.not_offered + '</b></td>';
@@ -494,7 +523,7 @@
                 $('#itd_summary_body').html(html);
             }
 
-            // Print button
+            // ✅ Print button
             $('#btn_print_summary').on('click', function() {
                 var month = $('#dd_month_filter').val();
                 var year = $('#dd_year_filter').val();
@@ -507,12 +536,13 @@
                     dd_year: year,
                     contract_type: $('#contract_type_filter').val() || '',
                     category_id: $('#category_filter').val() || '',
+                    fiscal_year_id: $('#fiscal_year_filter').val() || '',
                 });
                 window.open('/itd-summary-print?' + params.toString(), '_blank');
             });
 
-            // Page load pe sirf summary cards load karo
-            loadSummaryCards();
+            // ✅ Page load pe fiscal years fetch karo
+            loadFiscalYears();
         });
     </script>
 @endsection
