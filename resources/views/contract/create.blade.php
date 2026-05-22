@@ -456,7 +456,7 @@
                             </div>
                         </div>
                         {{-- 6. Shipment Date --}}
-                        <div class="form-group col-sm-3">
+                        {{-- <div class="form-group col-sm-3">
                             {!! Form::label('inst2_shipment_date', 'Shipment Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst2_shipment_date', null, [
@@ -465,7 +465,7 @@
                                     'readonly',
                                 ]) !!}
                             </div>
-                        </div>
+                        </div> --}}
                         {{-- 7. AFMSL Received Date (naya field) --}}
                         <div class="form-group col-sm-3">
                             {!! Form::label('inst2_afmsl_received_date', 'AFMSL Received Date:') !!}
@@ -605,7 +605,7 @@
                             </div>
                         </div>
                         {{-- 6. Shipment Date --}}
-                        <div class="form-group col-sm-3">
+                        {{-- <div class="form-group col-sm-3">
                             {!! Form::label('inst3_shipment_date', 'Shipment Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst3_shipment_date', null, [
@@ -614,7 +614,7 @@
                                     'readonly',
                                 ]) !!}
                             </div>
-                        </div>
+                        </div> --}}
                         {{-- 7. AFMSL Received Date (naya field) --}}
                         <div class="form-group col-sm-3">
                             {!! Form::label('inst3_afmsl_received_date', 'AFMSL Received Date:') !!}
@@ -756,7 +756,7 @@
                             </div>
                         </div>
                         {{-- 6. Shipment Date --}}
-                        <div class="form-group col-sm-3">
+                        {{-- <div class="form-group col-sm-3">
                             {!! Form::label('inst4_shipment_date', 'Shipment Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst4_shipment_date', null, [
@@ -765,7 +765,7 @@
                                     'readonly',
                                 ]) !!}
                             </div>
-                        </div>
+                        </div> --}}
                         {{-- 7. AFMSL Received Date (naya field) --}}
                         <div class="form-group col-sm-3">
                             {!! Form::label('inst4_afmsl_received_date', 'AFMSL Received Date:') !!}

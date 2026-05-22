@@ -207,7 +207,7 @@
                                     </div>
                                 </div>
                                 {{-- Shipment Date --}}
-                                <div class="form-group col-sm-3">
+                                {{-- <div class="form-group col-sm-3">
                                     <label>Shipment Date:</label>
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
@@ -217,15 +217,25 @@
                                             'readonly',
                                         ]) !!}
                                     </div>
-                                </div>
+                                </div> --}}
                                 {{-- AFMSL Received Date --}}
-                                <div class="form-group col-sm-3">
+                                {{-- <div class="form-group col-sm-3">
                                     <label>AFMSL Received Date:</label>
                                     {!! Form::text('inst' . $i . '_afmsl_received_date', $d['afmsl_received_date'] ?? null, [
                                         'class' => 'form-control form-control-sm',
                                         'placeholder' => 'Auto filled on receive',
                                         'readonly',
                                     ]) !!}
+                                </div> --}}
+                                {{-- AFMSL Received Date --}}
+                                <div class="form-group col-sm-3">
+                                    <label>AFMSL Received Date:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $d['afmsl_received_date'] ?? '' }}" placeholder="Auto filled on receive"
+                                            readonly>
+                                    </div>
                                 </div>
                                 {{-- Acceptance Letter Date --}}
                                 <div class="form-group col-sm-3">

@@ -614,21 +614,59 @@ class ContractController extends Controller
      * @param  \App\Contract  $contract
      * @return \Illuminate\Http\Response
      */
+    // public function edit(Contract $contract)
+    // {
+    //     $fiscal_years = FiscalYear::all();
+
+    //     $business_id = request()->session()->get('user.business_id');
+
+    //     $suppliers = Contact::where('business_id', $business_id)
+    //         ->active()
+    //         // ->onlySuppliers()
+    //         ->get(['id', DB::raw("IF(COALESCE(name, '') = '', supplier_business_name, name) as text")]);
+    //     $installmentDates = is_array($contract->installment_dates)
+    //         ? $contract->installment_dates
+    //         : (json_decode($contract->installment_dates, true) ?? []);
+
+    //     return view('contract.edit', compact('contract', 'suppliers', 'fiscal_years', 'installmentDates'));
+    // }
     public function edit(Contract $contract)
     {
         $fiscal_years = FiscalYear::all();
-
         $business_id = request()->session()->get('user.business_id');
 
         $suppliers = Contact::where('business_id', $business_id)
             ->active()
-            // ->onlySuppliers()
             ->get(['id', DB::raw("IF(COALESCE(name, '') = '', supplier_business_name, name) as text")]);
+
         $installmentDates = is_array($contract->installment_dates)
             ? $contract->installment_dates
             : (json_decode($contract->installment_dates, true) ?? []);
 
-        return view('contract.edit', compact('contract', 'suppliers', 'fiscal_years', 'installmentDates'));
+        // ✅ Transactions se AFMSL received dates fetch karo
+        $transactions = DB::table('transactions')
+            ->where('contract_no', $contract->id)
+            ->whereNotNull('d_rcv_by_afmsl')
+            ->select('d_rcv_by_afmsl', 'd_fwd_to_afmsl')
+            ->get();
+
+        // ✅ Installment dates mein AFMSL date inject karo
+        foreach ($installmentDates as &$inst) {
+            foreach ($transactions as $txn) {
+                if (!empty($txn->d_rcv_by_afmsl)) {
+                    $inst['afmsl_received_date'] = $txn->d_rcv_by_afmsl;
+                    break;
+                }
+            }
+        }
+
+        return view('contract.edit', compact(
+            'contract',
+            'suppliers',
+            'fiscal_years',
+            'installmentDates',
+            'transactions'  // ✅ transactions pass karo
+        ));
     }
     // public function dashboard(Contract $contract)
     // {
