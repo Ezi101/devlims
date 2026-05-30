@@ -643,22 +643,26 @@ class ContractController extends Controller
             ? $contract->installment_dates
             : (json_decode($contract->installment_dates, true) ?? []);
 
-        // ✅ Transactions se AFMSL received dates fetch karo
+        // Transactions fetch karo installment wise
         $transactions = DB::table('transactions')
             ->where('contract_no', $contract->id)
             ->whereNotNull('d_rcv_by_afmsl')
-            ->select('d_rcv_by_afmsl', 'd_fwd_to_afmsl')
+            ->select('d_rcv_by_afmsl', 'instalments')  // instalments column bhi lo
             ->get();
 
-        // ✅ Installment dates mein AFMSL date inject karo
-        foreach ($installmentDates as &$inst) {
+        // Installment number wise match karo
+        foreach ($installmentDates as $instNum => &$inst) {
+            $instKey = 'instalments_' . $instNum;  // e.g. instalments_1, instalments_2
+
             foreach ($transactions as $txn) {
-                if (!empty($txn->d_rcv_by_afmsl)) {
-                    $inst['afmsl_received_date'] = $txn->d_rcv_by_afmsl;
+                if ($txn->instalments === $instKey && !empty($txn->d_rcv_by_afmsl)) {
+                    $inst['afmsl_received_date'] = date('Y-m-d', strtotime($txn->d_rcv_by_afmsl));
                     break;
                 }
             }
         }
+
+        $contract->installment_dates = $installmentDates;
 
         return view('contract.edit', compact(
             'contract',
