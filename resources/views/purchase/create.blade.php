@@ -338,7 +338,7 @@
                         </div>
 
                         {{-- Offered Date Field --}}
-                        <div class="col-sm-3" id="offered_date_container" style="display: none;">
+                        {{-- <div class="col-sm-3" id="offered_date_container" style="display: none;">
                             <div class="form-group">
                                 {!! Form::label('offered_date', __('purchase.offered_date') . ':*') !!}
                                 <div class="input-group">
@@ -353,10 +353,10 @@
                                     ]) !!}
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         {{-- Desired Offered Date Field --}}
-                        <div class="col-sm-3" id="desired_offered_date_container" style="display: none;">
+                        {{-- <div class="col-sm-3" id="desired_offered_date_container" style="display: none;">
                             <div class="form-group">
                                 {!! Form::label('desired_offered_date', __('purchase.desired_offered_date') . ':*') !!}
                                 <div class="input-group">
@@ -371,7 +371,7 @@
                                     ]) !!}
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
 
                     </div>
@@ -552,18 +552,18 @@
                                     @php
                                         $staticOptions_dosage_form = [
                                             '' => 'Please Select',
-                                            'july' => 'July',
-                                            'august' => 'August',
-                                            'september' => 'September',
-                                            'october' => 'October',
-                                            'november' => 'November',
-                                            'december' => 'December',
-                                            'january' => 'January',
-                                            'february' => 'February',
-                                            'march' => 'March',
-                                            'april' => 'April',
-                                            'may' => 'May',
-                                            'june' => 'June',
+                                            // 'july' => 'July',
+                                            // 'august' => 'August',
+                                            // 'september' => 'September',
+                                            // 'october' => 'October',
+                                            // 'november' => 'November',
+                                            // 'december' => 'December',
+                                            // 'january' => 'January',
+                                            // 'february' => 'February',
+                                            // 'march' => 'March',
+                                            // 'april' => 'April',
+                                            // 'may' => 'May',
+                                            // 'june' => 'June',
                                             //Instalments
                                             'instalments_1' => '1st Instalment',
                                             'instalments_2' => '2nd Instalment',
@@ -1590,20 +1590,7 @@
                                 <div class="form-group">
                                     <select name="batches[${tbodyRowCount}][instalments]" class="form-control select3" style="width:100%;font-size:12px;" data-action="add" data-item_id="0">
                                        <option value="">Please Select</option> 
-                                        <optgroup label="Months">
-                                            <option value="july">July</option>
-                                            <option value="august">August</option>
-                                            <option value="september">September</option>
-                                            <option value="october">October</option>
-                                            <option value="november">November</option>
-                                            <option value="december">December</option>
-                                            <option value="january">January</option>
-                                            <option value="february">February</option>
-                                            <option value="march">March</option>
-                                            <option value="april">April</option>
-                                            <option value="may">May</option>
-                                            <option value="june">June</option>
-                                        </optgroup>
+                                        
                                         <optgroup label="Instalments">
                                             <option value="instalments_1">1st Instalment</option>
                                             <option value="instalments_2">2nd Instalment</option>

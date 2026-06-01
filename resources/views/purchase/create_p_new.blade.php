@@ -611,7 +611,7 @@
                         ]) !!}
                     </div>
                     {{-- offering date --}}
-                    <div class="form-group supply-fields col-sm-4" style="margin-top: -40px;">
+                    {{-- <div class="form-group supply-fields col-sm-4" style="margin-top: -40px;">
                         {!! Form::label('offering_date', __('product.offer_date') . ':*') !!}
                         <div class="input-group">
                             <span class="input-group-addon">
@@ -621,7 +621,7 @@
                                 class="form-control form-control-sm" placeholder="{{ __('product.offer_date') }}"
                                 autocomplete="off">
                         </div>
-                    </div>
+                    </div> --}}
                     {{-- contract/flex date with quick add --}}
                     <div class="form-group supply-fields col-sm-4">
                         {!! Form::label('fiscal_year_id', __('product.fisc_yr') . ':*') !!}
