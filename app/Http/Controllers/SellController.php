@@ -5304,7 +5304,8 @@ class SellController extends Controller
                         'bulk'        => 0,
                         'testing'     => 0,
                         'sampling'    => 0,
-                        'shipment'    => 0,
+                        // 'shipment'    => 0,
+                        'transit' => 0,
                         'eu'          => 0,
                         'case_ref'    => 0,
                         'iei'         => 0,
@@ -5372,7 +5373,7 @@ class SellController extends Controller
                     if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;
 
                     // ✅ Under Shipment
-                    if ($sampling && !$isReceivedByAfmsl)           $result[$key]['shipment']++;
+                    if ($sampling && !$isReceivedByAfmsl)           $result[$key]['transit']++;
 
                     // ✅ Testing U/P
                     if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
@@ -5401,7 +5402,7 @@ class SellController extends Controller
                     $key = $cat . '_' . $loc;
                     $r = $result[$key];
                     $result[$key]['bal'] =
-                        $r['sampling'] + $r['shipment'] + $r['testing'] +
+                        $r['sampling'] + $r['transit'] + $r['testing'] +
                         $r['accepted'] + $r['bulk']     + $r['iei'] +
                         $r['i_note']   + $r['case_ref'] + $r['eu'];
                 }

@@ -239,7 +239,7 @@
                             <th>Not<br>Offered</th>
                             <th>Offer Ltr<br>Cancelled</th>
                             <th>Under<br>Sampling</th>
-                            <th>Under<br>Shipment</th>
+                            <th>Under<br>Transit</th>
                             <th>Testing<br>U/P</th>
                             <th>Accepted<br>by AFIMS</th>
                             <th>Bulk<br>Stamping U/P</th>
@@ -396,7 +396,7 @@
                     bulk: 0,
                     testing: 0,
                     sampling: 0,
-                    shipment: 0,
+                    transit: 0,
                     eu: 0,
                     case_ref: 0,
                     iei: 0,
@@ -414,7 +414,7 @@
                         bulk: 0,
                         testing: 0,
                         sampling: 0,
-                        shipment: 0,
+                        transit: 0,
                         eu: 0,
                         case_ref: 0,
                         iei: 0,
@@ -434,7 +434,7 @@
                         catTotals.bulk += (row.bulk || 0);
                         catTotals.testing += (row.testing || 0);
                         catTotals.sampling += (row.sampling || 0);
-                        catTotals.shipment += (row.shipment || 0);
+                        catTotals.transit += (row.transit || 0);
                         catTotals.eu += (row.eu || 0);
                         catTotals.case_ref += (row.case_ref || 0);
                         catTotals.iei += (row.iei || 0);
@@ -456,7 +456,7 @@
                         html += '<td>' + (row.not_offered || 0) + '</td>'; // Not Offered
                         html += '<td>' + (row.cancelled || 0) + '</td>'; // Offer Ltr Cancelled
                         html += '<td>' + (row.sampling || 0) + '</td>'; // Under Sampling
-                        html += '<td>' + (row.shipment || 0) + '</td>'; // Under Shipment
+                        html += '<td>' + (row.transit || 0) + '</td>';
                         html += '<td>' + (row.testing || 0) + '</td>'; // Testing U/P
                         html += '<td>' + (row.accepted || 0) + '</td>'; // Accepted by AFIMS
                         html += '<td>' + (row.bulk || 0) + '</td>'; // Bulk Stamping U/P
@@ -476,7 +476,7 @@
                     html += '<td><b>' + catTotals.not_offered + '</b></td>';
                     html += '<td><b>' + catTotals.cancelled + '</b></td>';
                     html += '<td><b>' + catTotals.sampling + '</b></td>';
-                    html += '<td><b>' + catTotals.shipment + '</b></td>';
+                    html += '<td><b>' + catTotals.transit + '</b></td>';
                     html += '<td><b>' + catTotals.testing + '</b></td>';
                     html += '<td><b>' + catTotals.accepted + '</b></td>';
                     html += '<td><b>' + catTotals.bulk + '</b></td>';
@@ -500,7 +500,7 @@
                 html += '<td><b>' + grandTotal.not_offered + '</b></td>';
                 html += '<td><b>' + grandTotal.cancelled + '</b></td>';
                 html += '<td><b>' + grandTotal.sampling + '</b></td>';
-                html += '<td><b>' + grandTotal.shipment + '</b></td>';
+                html += '<td><b>' + grandTotal.transit + '</b></td>';
                 html += '<td><b>' + grandTotal.testing + '</b></td>';
                 html += '<td><b>' + grandTotal.accepted + '</b></td>';
                 html += '<td><b>' + grandTotal.bulk + '</b></td>';
