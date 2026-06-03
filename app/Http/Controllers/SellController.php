@@ -3834,7 +3834,7 @@ class SellController extends Controller
                     $row->inst_desired           = null;
                     $row->inst_offer             = null;
                     $row->inst_sampling_on       = null;
-                    $row->inst_shipment          = null;
+                    $row->inst_transit          = null;
                     $row->inst_afmsl_received    = null;
                     $row->inst_acceptance_letter = null;
                     $row->inst_bulk_stamping     = null;
@@ -3852,7 +3852,7 @@ class SellController extends Controller
                         $newRow->inst_desired           = $inst['desired_offered_date']   ?? null;
                         $newRow->inst_offer             = $inst['offering_date']          ?? null;
                         $newRow->inst_sampling_on       = $inst['sampling_on']            ?? null;
-                        $newRow->inst_shipment          = $inst['shipment_date']          ?? null;
+                        $newRow->inst_transit          = $inst['transit_date']          ?? null;
                         $newRow->inst_afmsl_received    = $inst['afmsl_received_date']    ?? null;
                         $newRow->inst_acceptance_letter = $inst['acceptance_letter_date'] ?? null;
                         $newRow->inst_bulk_stamping     = $inst['bulk_stamping_date']     ?? null;
@@ -3871,7 +3871,7 @@ class SellController extends Controller
                 $row->inst_desired           = null;
                 $row->inst_offer             = null;
                 $row->inst_sampling_on       = null;
-                $row->inst_shipment          = null;
+                $row->inst_transit          = null;
                 $row->inst_afmsl_received    = null;
                 $row->inst_acceptance_letter = null;
                 $row->inst_bulk_stamping     = null;
@@ -3935,7 +3935,7 @@ class SellController extends Controller
             ->addColumn('inst_desired',           fn($row) => $this->formatSafeDate($row->inst_desired))
             ->addColumn('inst_offer',             fn($row) => $this->formatSafeDate($row->inst_offer))
             ->addColumn('inst_sampling_on',       fn($row) => $this->formatSafeDate($row->inst_sampling_on))
-            ->addColumn('inst_shipment',          fn($row) => $this->formatSafeDate($row->inst_shipment))
+            ->addColumn('inst_transit',          fn($row) => $this->formatSafeDate($row->inst_transit))
             ->addColumn('inst_afmsl_received',    fn($row) => $this->formatSafeDate($row->inst_afmsl_received))
             ->addColumn('inst_acceptance_letter', fn($row) => $this->formatSafeDate($row->inst_acceptance_letter))
             ->addColumn('inst_bulk_stamping',     fn($row) => $this->formatSafeDate($row->inst_bulk_stamping))
@@ -5368,12 +5368,8 @@ class SellController extends Controller
 
                     // ✅ Accepted — STR approved ho lekin acceptance letter NA ho
                     if ($isStrApproved && !$accepted)               $result[$key]['accepted']++;
-
-                    // ✅ Under Sampling — offered hai, acceptance letter nahi
-                    if ($offered && !$accepted && !$isStrApproved)  $result[$key]['sampling']++;
-
-                    // ✅ Under Shipment
-                    if ($sampling && !$isReceivedByAfmsl)           $result[$key]['transit']++;
+                    if ($offered && !$sampling)            $result[$key]['sampling']++;  // sampling_on nahi aayi abhi
+                    if ($sampling && !$isReceivedByAfmsl)  $result[$key]['transit']++;
 
                     // ✅ Testing U/P
                     if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
