@@ -4827,206 +4827,58 @@ class SellController extends Controller
     //         if (!auth()->user()->can('itd_report.view')) {
     //             abort(403, 'Unauthorized action.');
     //         }
+
     //         $business_id = $request->session()->get('user.business_id');
     //         $month = $request->input('dd_month');
 
     //         // Fiscal year auto-detect
     //         $currentMonth = (int) date('m');
     //         $currentYear  = (int) date('Y');
-
-    //         if ($currentMonth >= 7) {
-    //             $year = $currentYear;      // July-Dec: 2026
-    //         } else {
-    //             $year = $currentYear - 1;  // Jan-June: 2025
-    //         }
-
-    //         // Agar user ne manually year select kiya ho
+    //         $year = ($currentMonth >= 7) ? $currentYear : $currentYear - 1;
     //         if ($request->input('dd_year')) {
     //             $year = $request->input('dd_year');
     //         }
 
-    //         $contracts = DB::table('contracts')
-    //             ->leftJoin('products as p', 'contracts.sample_id', '=', 'p.id')
-    //             ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
-    //             ->where('contracts.business_id', $business_id)
-    //             ->where('contracts.type', 'supply')
-    //             ->select(
-    //                 'contracts.id',
-    //                 'contracts.loc',
-    //                 'contracts.installment_dates',
-    //                 'cat.name as category_name'
-    //             )
+    //         // ✅ Sirf zaroorat ke columns fetch karo
+    //         // $contracts = DB::table('contracts')
+    //         //     ->leftJoin('products as p', 'contracts.sample_id', '=', 'p.id')
+    //         //     ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
+    //         //     ->where('contracts.business_id', $business_id)
+    //         //     ->where('contracts.type', 'supply')
+    //         //     ->select(
+    //         //         'contracts.id',
+    //         //         'contracts.loc',
+    //         //         'contracts.installment_dates',
+    //         //         'cat.name as category_name'
+    //         //     )
+    //         //     ->get();
+    //         // ✅ Fiscal years DB se fetch karo
+    //         $fiscalYears = DB::table('fiscal_years')
+    //             ->whereNull('deleted_at')
+    //             ->orderBy('start_year', 'desc')
     //             ->get();
 
-    //         $result = [];
-    //         $locations  = ['Kcl', 'Lhr', 'Rwp'];
-    //         $categories = ['Medicine', 'Disposable'];
-
-    //         // Initialize
-    //         foreach ($categories as $cat) {
-    //             foreach ($locations as $loc) {
-    //                 $result[$cat . '_' . $loc] = [
-    //                     'total' => 0,
-    //                     'offered' => 0,
-    //                     'accepted' => 0,
-    //                     'cancelled' => 0,
-    //                     'not_offered' => 0,
-    //                     'bal' => 0,
-    //                     'bulk' => 0,
-    //                     'testing' => 0,
-    //                     'sampling' => 0,
-    //                     'shipment' => 0,
-    //                     'eu' => 0,
-    //                     'case_ref' => 0,
-    //                     'iei' => 0,
-    //                 ];
-    //             }
-    //         }
-
-    //         foreach ($contracts as $contract) {
-    //             $instDates = json_decode($contract->installment_dates, true);
-    //             if (!is_array($instDates)) continue;
-
-    //             $cat = $contract->category_name;
-    //             $loc = $contract->loc;
-
-    //             // Location normalize
-    //             $locKey = null;
-    //             if (stripos($loc, 'kar') !== false || stripos($loc, 'kcl') !== false) $locKey = 'Kcl';
-    //             elseif (stripos($loc, 'lah') !== false || stripos($loc, 'lhr') !== false) $locKey = 'Lhr';
-    //             elseif (stripos($loc, 'raw') !== false || stripos($loc, 'rwp') !== false) $locKey = 'Rwp';
-
-    //             if (!$locKey) continue;
-    //             if (!in_array($cat, $categories)) continue;
-
-    //             $key = $cat . '_' . $locKey;
-
-    //             foreach ($instDates as $inst) {
-    //                 $ddDate = $inst['dd_date'] ?? null;
-    //                 if (!$ddDate) continue;
-
-    //                 // Month/Year filter
-    //                 if ($month) {
-    //                     $instMonth = date('m', strtotime($ddDate));
-    //                     $instYear  = date('Y', strtotime($ddDate));
-    //                     if ($instMonth != $month || $instYear != $year) continue;
-    //                 }
-
-    //                 $result[$key]['total']++;
-
-    //                 $offered   = !empty($inst['offering_date']);
-    //                 $accepted  = !empty($inst['acceptance_letter_date']);
-    //                 $bulk      = !empty($inst['bulk_sampling_date']);
-    //                 $iei       = !empty($inst['iei_approved_date']);
-    //                 $sampling  = !empty($inst['sampling_on']);
-    //                 $shipment  = !empty($inst['shipment_date']);
-    //                 $eu        = !empty($inst['eu_opinion_date']);
-    //                 $caseRef   = !empty($inst['case_ref_date']);
-
-    //                 // Stage 1: Not Offered — offering_date nahi hai
-    //                 if (!$offered) {
-    //                     $result[$key]['not_offered']++;
-    //                 }
-
-    //                 // Stage 2: Offered — offering_date hai
-    //                 if ($offered) {
-    //                     $result[$key]['offered']++;
-    //                 }
-
-    //                 // Stage 3: Bal U/Process — offered hai lekin accepted nahi
-    //                 if ($offered && !$accepted) {
-    //                     $result[$key]['bal']++;
-    //                 }
-
-    //                 // Stage 4: Accepted
-    //                 if ($accepted) {
-    //                     $result[$key]['accepted']++;
-    //                 }
-
-    //                 // Stage 5: Under Sampling — sampling hai lekin offering nahi
-    //                 if ($sampling && !$offered) {
-    //                     $result[$key]['sampling']++;
-    //                 }
-
-    //                 // Stage 6: Bulk Stamping U/P — bulk hai lekin IEI nahi
-    //                 if ($bulk && !$iei) {
-    //                     $result[$key]['bulk']++;
-    //                 }
-
-    //                 // Stage 7: Testing U/P — IEI nahi hua abhi tak
-    //                 if (!$iei) {
-    //                     $result[$key]['testing']++;
-    //                 }
-
-    //                 // Stage 8: Under Shipment — shipment date hai
-    //                 if ($shipment) {
-    //                     $result[$key]['shipment']++;
-    //                 }
-
-    //                 // Stage 9: E/U Opinion Awaited
-    //                 if ($eu) {
-    //                     $result[$key]['eu']++;
-    //                 }
-
-    //                 // Stage 10: Case Ref
-    //                 if ($caseRef) {
-    //                     $result[$key]['case_ref']++;
-    //                 }
-
-    //                 // Stage 11: IEI Date
-    //                 if ($iei) {
-    //                     $result[$key]['iei']++;
-    //                 }
-    //             }
-    //         }
-
-    //         return response()->json($result);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'error' => $e->getMessage(),
-    //             'line'  => $e->getLine(),
-    //         ], 500);
-    //     }
-    // }
-    // public function itdSummaryTable(Request $request)
-    // {
-    //     try {
-    //         if (!auth()->user()->can('itd_report.view')) {
-    //             abort(403, 'Unauthorized action.');
-    //         }
-
-    //         $business_id = $request->session()->get('user.business_id');
-    //         $month = $request->input('dd_month');
-
-    //         // Fiscal year auto-detect
-    //         $currentMonth = (int) date('m');
-    //         $currentYear  = (int) date('Y');
-
-    //         if ($currentMonth >= 7) {
-    //             $year = $currentYear;
-    //         } else {
-    //             $year = $currentYear - 1;
-    //         }
-
-    //         if ($request->input('dd_year')) {
-    //             $year = $request->input('dd_year');
-    //         }
+    //         // ✅ Fiscal year filter
+    //         $fiscalYearId = $request->input('fiscal_year_id');
 
     //         $contracts = DB::table('contracts')
     //             ->leftJoin('products as p', 'contracts.sample_id', '=', 'p.id')
     //             ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
     //             ->where('contracts.business_id', $business_id)
-    //             ->where('contracts.type', 'supply')
+    //             ->where('contracts.type', $request->input('contract_type') ?: 'supply')
+    //             ->when($request->input('category_id'), function ($query) use ($request) {
+    //                 $query->where('cat.name', $request->input('category_id'));
+    //             })
+    //             // ✅ Fiscal year filter
+    //             ->when($fiscalYearId, function ($query) use ($fiscalYearId) {
+    //                 $query->where('contracts.fiscal_year_id', $fiscalYearId);
+    //             })
     //             ->select(
     //                 'contracts.id',
     //                 'contracts.loc',
     //                 'contracts.installment_dates',
     //                 'cat.name as category_name'
     //             )
-    //             // ✅ SQL mein hi month/year filter lagao
-    //             ->when($month, function ($query) use ($month, $year) {
-    //                 $query->whereRaw("JSON_SEARCH(contracts.installment_dates, 'one', ?, NULL, '$[*].dd_date') IS NOT NULL", ["%{$year}-{$month}%"]);
-    //             })
     //             ->get();
 
     //         // ✅ Fix 1: Received by AFMSL
@@ -5070,7 +4922,8 @@ class SellController extends Controller
     //                     'bulk'        => 0,
     //                     'testing'     => 0,
     //                     'sampling'    => 0,
-    //                     'shipment'    => 0,
+    //                     // 'shipment'    => 0,
+    //                     'transit' => 0,
     //                     'eu'          => 0,
     //                     'case_ref'    => 0,
     //                     'iei'         => 0,
@@ -5079,35 +4932,41 @@ class SellController extends Controller
     //             }
     //         }
 
+    //         // ✅ Location map — stripos ki jagah direct map (fast)
+    //         $locMap = [
+    //             'kar' => 'Kcl',
+    //             'kcl' => 'Kcl',
+    //             'lah' => 'Lhr',
+    //             'lhr' => 'Lhr',
+    //             'raw' => 'Rwp',
+    //             'rwp' => 'Rwp',
+    //         ];
+
     //         foreach ($contracts as $contract) {
     //             $instDates = json_decode($contract->installment_dates, true);
     //             if (!is_array($instDates)) continue;
 
     //             $cat = $contract->category_name;
-    //             $loc = $contract->loc;
-
-    //             // Location normalize
-    //             $locKey = null;
-    //             if (stripos($loc, 'kar') !== false || stripos($loc, 'kcl') !== false) $locKey = 'Kcl';
-    //             elseif (stripos($loc, 'lah') !== false || stripos($loc, 'lhr') !== false) $locKey = 'Lhr';
-    //             elseif (stripos($loc, 'raw') !== false || stripos($loc, 'rwp') !== false) $locKey = 'Rwp';
-
-    //             if (!$locKey) continue;
     //             if (!in_array($cat, $categories)) continue;
 
-    //             $key = $cat . '_' . $locKey;
-
+    //             // ✅ isset() — in_array se 10x fast
     //             $isReceivedByAfmsl = isset($receivedContractIds[$contract->id]);
     //             $isStrApproved     = isset($strApprovedContractIds[$contract->id]);
+
+    //             // ✅ Location normalize — strtolower + substr
+    //             $locLower = strtolower(substr($contract->loc, 0, 3));
+    //             $locKey   = $locMap[$locLower] ?? null;
+    //             if (!$locKey) continue;
+
+    //             $key = $cat . '_' . $locKey;
 
     //             foreach ($instDates as $inst) {
     //                 $ddDate = $inst['dd_date'] ?? null;
     //                 if (!$ddDate) continue;
 
-    //                 // Month/Year filter
+    //                 // ✅ Month/Year filter — strtotime ki jagah direct string split
     //                 if ($month) {
-    //                     $instMonth = date('m', strtotime($ddDate));
-    //                     $instYear  = date('Y', strtotime($ddDate));
+    //                     [$instYear, $instMonth] = explode('-', substr($ddDate, 0, 7));
     //                     if ($instMonth != $month || $instYear != $year) continue;
     //                 }
 
@@ -5118,80 +4977,48 @@ class SellController extends Controller
     //                 $bulk     = !empty($inst['bulk_stamping_date']);
     //                 $iei      = !empty($inst['iei_approved_date']);
     //                 $sampling = !empty($inst['sampling_on']);
-    //                 $shipment = !empty($inst['shipment_date']);
     //                 $eu       = !empty($inst['eu_opinion_date']);
     //                 $caseRef  = !empty($inst['case_ref_date']);
-    //                 $iNote = !empty($inst['i_note_date']);
+    //                 $iNote    = !empty($inst['i_note_date']);
 
+    //                 if (!$offered)                                  $result[$key]['not_offered']++;
+    //                 if ($offered)                                   $result[$key]['offered']++;
 
-    //                 // Stage 1: Not Offered
-    //                 if (!$offered) {
-    //                     $result[$key]['not_offered']++;
-    //                 }
+    //                 // ✅ Accepted — STR approved ho lekin acceptance letter NA ho
+    //                 if ($isStrApproved && !$accepted)               $result[$key]['accepted']++;
+    //                 if ($offered && !$sampling)            $result[$key]['sampling']++;  // sampling_on nahi aayi abhi
+    //                 if ($sampling && !$isReceivedByAfmsl)  $result[$key]['transit']++;
 
-    //                 // Stage 2: Offered
-    //                 if ($offered) {
-    //                     $result[$key]['offered']++;
-    //                 }
+    //                 // ✅ Testing U/P
+    //                 if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
 
-    //                 // Stage 3: Accepted by AFIMS
-    //                 if ($accepted || $isStrApproved) {
-    //                     $result[$key]['accepted']++;
-    //                 }
+    //                 // ✅ Bulk Stamping — acceptance letter hai, bulk date nahi, IEI nahi
+    //                 // if ($accepted && !$bulk && !$iei)               $result[$key]['bulk']++;
 
-    //                 // Stage 4: Under Sampling — offered hai lekin acceptance letter nahi
-    //                 if ($offered && !$accepted) {
-    //                     $result[$key]['sampling']++;
-    //                 }
+    //                 // // ✅ IEI Date — bulk stamping di, IEI nahi
+    //                 // if ($bulk && !$iei)                             $result[$key]['iei']++;
 
-    //                 // Stage 5: Under Shipment — sampling di lekin AFMSL nahi
-    //                 if ($sampling && !$isReceivedByAfmsl) {
-    //                     $result[$key]['shipment']++;
-    //                 }
+    //                 // // ✅ I Note Date — IEI di, I Note nahi
+    //                 // if ($iei && !$iNote)      $result[$key]['i_note']++;
 
-    //                 // Stage 6: Testing U/P — AFMSL hua lekin STR approved nahi
-    //                 if ($isReceivedByAfmsl && !$isStrApproved && !$iei) {
-    //                     $result[$key]['testing']++;
-    //                 }
-
-    //                 // Stage 7: Bulk Stamping U/P — accepted hai lekin IEI nahi
-    //                 if ($accepted && !$iei) {
-    //                     $result[$key]['bulk']++;
-    //                 }
-
-    //                 // Stage 8: IEI Date — bulk stamping di lekin I Note nahi
-    //                 if ($iei && !$iNote) {
-    //                     $result[$key]['iei']++;
-    //                 }
-
-    //                 // ✅ Stage 9: I Note Date — IEI ho gayi
-    //                 if ($iNote) {
-    //                     $result[$key]['i_note']++;
-    //                 }
-
-    //                 // Stage 10: E/U Opinion Awaited
-    //                 if ($eu) {
-    //                     $result[$key]['eu']++;
-    //                 }
-
-    //                 // Stage 11: Case Ref
-    //                 if ($caseRef) {
-    //                     $result[$key]['case_ref']++;
-    //                 }
+    //                 // if ($eu)                                        $result[$key]['eu']++;
+    //                 // if ($caseRef)                                   $result[$key]['case_ref']++;
+    //                 if ($accepted && !$bulk && !$iei)   $result[$key]['bulk']++;   // Bulk pending
+    //                 if ($bulk && !$iei)                 $result[$key]['iei']++;    // IEI pending
+    //                 if ($iei && !$iNote)                $result[$key]['i_note']++; // I Note pending
+    //                 if ($eu)                 $result[$key]['eu']++;
     //             }
     //         }
+
+    //         // Bal calculate
     //         foreach ($categories as $cat) {
     //             foreach ($locations as $loc) {
     //                 $key = $cat . '_' . $loc;
+    //                 $r = $result[$key];
     //                 $result[$key]['bal'] =
-    //                     $result[$key]['sampling'] +
-    //                     $result[$key]['shipment'] +
-    //                     $result[$key]['testing'] +
-    //                     $result[$key]['accepted'] +
-    //                     $result[$key]['bulk'] +
-    //                     $result[$key]['iei'] +
-    //                     $result[$key]['case_ref'] +
-    //                     $result[$key]['eu'];
+    //                     $r['sampling'] + $r['transit'] + $r['testing'] +
+    //                     $r['accepted'] + $r['bulk']     + $r['iei'] +
+    //                     $r['i_note']   + $r['case_ref'] + $r['eu'];
     //             }
     //         }
 
@@ -5203,6 +5030,7 @@ class SellController extends Controller
     //         ], 500);
     //     }
     // }
+
     public function itdSummaryTable(Request $request)
     {
         try {
@@ -5355,40 +5183,44 @@ class SellController extends Controller
                     $result[$key]['total']++;
 
                     $offered  = !empty($inst['offering_date']);
+                    $sampling = !empty($inst['sampling_on']);
                     $accepted = !empty($inst['acceptance_letter_date']);
                     $bulk     = !empty($inst['bulk_stamping_date']);
                     $iei      = !empty($inst['iei_approved_date']);
-                    $sampling = !empty($inst['sampling_on']);
+                    $iNote    = !empty($inst['i_note_date']);
                     $eu       = !empty($inst['eu_opinion_date']);
                     $caseRef  = !empty($inst['case_ref_date']);
-                    $iNote    = !empty($inst['i_note_date']);
 
-                    if (!$offered)                                  $result[$key]['not_offered']++;
-                    if ($offered)                                   $result[$key]['offered']++;
+                    // 1. Not Offered / Offered
+                    if (!$offered)                             $result[$key]['not_offered']++;
+                    if ($offered)                              $result[$key]['offered']++;
 
-                    // ✅ Accepted — STR approved ho lekin acceptance letter NA ho
-                    if ($isStrApproved && !$accepted)               $result[$key]['accepted']++;
-                    if ($offered && !$sampling)            $result[$key]['sampling']++;  // sampling_on nahi aayi abhi
-                    if ($sampling && !$isReceivedByAfmsl)  $result[$key]['transit']++;
+                    // 2. Under Sampling — offered hai, sampling nahi aayi
+                    if ($offered && !$sampling)                $result[$key]['sampling']++;
 
-                    // ✅ Testing U/P
-                    if ($isReceivedByAfmsl && !$isStrApproved)      $result[$key]['testing']++;
+                    // 3. Under Transit — sampling aayi, AFMSL nahi pahuncha
+                    if ($sampling && !$isReceivedByAfmsl)      $result[$key]['transit']++;
 
-                    // ✅ Bulk Stamping — acceptance letter hai, bulk date nahi, IEI nahi
-                    // if ($accepted && !$bulk && !$iei)               $result[$key]['bulk']++;
+                    // 4. Testing U/P — AFMSL mila, STR approved nahi
+                    if ($isReceivedByAfmsl && !$isStrApproved) $result[$key]['testing']++;
 
-                    // // ✅ IEI Date — bulk stamping di, IEI nahi
-                    // if ($bulk && !$iei)                             $result[$key]['iei']++;
+                    // 5. Accepted — STR approved, acceptance letter nahi
+                    if ($isStrApproved && !$accepted)          $result[$key]['accepted']++;
 
-                    // // ✅ I Note Date — IEI di, I Note nahi
-                    // if ($iei && !$iNote)      $result[$key]['i_note']++;
+                    // 6. Bulk Stamping U/P — accepted, bulk nahi
+                    if ($accepted && !$bulk)                   $result[$key]['bulk']++;
 
-                    // if ($eu)                                        $result[$key]['eu']++;
-                    // if ($caseRef)                                   $result[$key]['case_ref']++;
-                    if ($accepted && !$bulk && !$iei)   $result[$key]['bulk']++;   // Bulk pending
-                    if ($bulk && !$iei)                 $result[$key]['iei']++;    // IEI pending
-                    if ($iei && !$iNote)                $result[$key]['i_note']++; // I Note pending
-                    if ($eu)                 $result[$key]['eu']++;
+                    // 7. IEI Date — bulk hua, IEI nahi
+                    if ($bulk && !$iei)                        $result[$key]['iei']++;
+
+                    // 8. I Note Date — IEI hua, I Note nahi
+                    if ($iei && !$iNote)                       $result[$key]['i_note']++;
+
+                    // 9. E/U Opinion — I Note hua, EU nahi
+                    if ($iNote && !$eu)                        $result[$key]['eu']++;
+
+                    // 10. Case Ref
+                    if ($caseRef)                              $result[$key]['case_ref']++;
                 }
             }
 
