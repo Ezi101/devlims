@@ -8425,4 +8425,22 @@ class PurchaseController extends Controller
                 'contract'
             ));
     }
+
+    public function saveDisclaimer(Request $request)
+    {
+        try {
+            PurchaseLine::where('id', $request->line_id)
+                ->update(['disclaimer' => $request->disclaimer]);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Disclaimer saved successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'msg' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

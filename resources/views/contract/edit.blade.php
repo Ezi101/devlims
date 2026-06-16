@@ -158,12 +158,12 @@
                                 </div>
                                 {{-- DD Date --}}
                                 <div class="form-group col-sm-3">
-                                    <label>DD Date:</label>
+                                    <label>DP Date:</label>
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                         {!! Form::text('inst' . $i . '_dd_date', $d['dd_date'] ?? null, [
                                             'class' => 'form-control form-control-sm datepicker dd-date-field',
-                                            'placeholder' => 'DD Date',
+                                            'placeholder' => 'DP Date',
                                             'readonly',
                                             'data-inst' => $i,
                                         ]) !!}
@@ -298,6 +298,16 @@
                                             'placeholder' => 'Case Ref Date',
                                             'readonly',
                                         ]) !!}
+                                    </div>
+                                </div>
+                                {{-- STR Date --}}
+                                <div class="form-group col-sm-3">
+                                    <label>STR Date:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $d['str_date'] ?? '' }}" placeholder="Auto filled on STR approve"
+                                            readonly>
                                     </div>
                                 </div>
                             </div>

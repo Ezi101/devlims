@@ -53,24 +53,45 @@ class STRController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    // public function index()
+    // {
+    //     if (!auth()->user()->can('str.view')) {
+    //         abort(403, 'Unauthorized action.');
+    //     }
+
+    //     $user = auth()->user();
+    //     $business_id = request()->session()->get('user.business_id');
+
+    //     // General data: all STRs and samples.
+    //     $samples = Product::where('business_id', $business_id)->where('product_type', 'sample')->groupBy('name')->get();
+    //     $strs = STR::where('business_id', $business_id)->groupBy('str_no')->get();
+    //     // dd($strs);
+    //     $users = User::all()->map(function ($user) {
+    //         return $user->getUserFullNameAttribute();
+    //     });
+
+    //     return view('str.index', ['strs' => $strs, 'users' => $users, 'sample' => $samples, 'business_id' => $business_id]);
+    // }
     public function index()
     {
         if (!auth()->user()->can('str.view')) {
             abort(403, 'Unauthorized action.');
         }
 
-        $user = auth()->user();
         $business_id = request()->session()->get('user.business_id');
 
-        // General data: all STRs and samples.
-        $samples = Product::where('business_id', $business_id)->where('product_type', 'sample')->groupBy('name')->get();
-        $strs = STR::where('business_id', $business_id)->groupBy('str_no')->get();
-        // dd($strs);
-        $users = User::all()->map(function ($user) {
-            return $user->getUserFullNameAttribute();
-        });
+        $samples = Product::where('business_id', $business_id)
+            ->where('product_type', 'sample')
+            ->groupBy('name')
+            ->get(['id', 'name']);
 
-        return view('str.index', ['strs' => $strs, 'users' => $users, 'sample' => $samples, 'business_id' => $business_id]);
+        // STR bilkul mat load karo!
+        return view('str.index', [
+            'strs'        => collect([]),
+            'users'       => collect([]),
+            'sample'      => $samples,
+            'business_id' => $business_id
+        ]);
     }
 
     public function queued()
@@ -310,28 +331,54 @@ class STRController extends Controller
             $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
         }
 
-        $strStatusData = $query->groupBy('str_no')->get();
+        // $strStatusData = $query->groupBy('str_no')->get();
+        $strStatusData = $query->groupBy('str_no')
+            ->orderBy('created_at', 'desc')
+            ->limit(200)
+            ->get();
 
+        // $strStatusData->each(function ($str) {
+        //     if ($str->product && isset($str->product->generic_name)) {
+        //         $genericNameField = $str->product->generic_name;
+
+        //         if (is_string($genericNameField) && $this->isJson($genericNameField)) {
+        //             $genericNameField = json_decode($genericNameField, true);
+        //         }
+
+        //         if (is_array($genericNameField)) {
+        //             $genericNames = \App\GenericName::whereIn('id', $genericNameField)
+        //                 ->pluck('name')
+        //                 ->toArray();
+        //             $str->product->generic_names = implode(', ', $genericNames);
+        //         } else {
+        //             $genericName = \App\GenericName::find($genericNameField);
+        //             $str->product->generic_names = $genericName ? $genericName->name : '--';
+        //         }
+        //     } else {
+        //         $str->product->generic_names = '--';
+        //     }
+        //     $str->created_by = $str->creator ? $str->creator->getUserFullNameAttribute() : '--';
+        // });
+        // Naya - product ko array mein convert karo
         $strStatusData->each(function ($str) {
+            $genericNames = '--';
+
             if ($str->product && isset($str->product->generic_name)) {
                 $genericNameField = $str->product->generic_name;
-
                 if (is_string($genericNameField) && $this->isJson($genericNameField)) {
                     $genericNameField = json_decode($genericNameField, true);
                 }
-
                 if (is_array($genericNameField)) {
                     $genericNames = \App\GenericName::whereIn('id', $genericNameField)
                         ->pluck('name')
-                        ->toArray();
-                    $str->product->generic_names = implode(', ', $genericNames);
+                        ->implode(', ');
                 } else {
                     $genericName = \App\GenericName::find($genericNameField);
-                    $str->product->generic_names = $genericName ? $genericName->name : '--';
+                    $genericNames = $genericName ? $genericName->name : '--';
                 }
-            } else {
-                $str->product->generic_names = '--';
             }
+
+            $str->generic_names = $genericNames;
             $str->created_by = $str->creator ? $str->creator->getUserFullNameAttribute() : '--';
         });
 
@@ -404,8 +451,10 @@ class STRController extends Controller
         $test_Comply = $request->input('t_comply');
         $test_Analyst = $request->input('t_analyst');
         $observation = $request->input('observation', null); // Default to null if not set
+        $amendment = $request->input('amendment', null);
 
-        $count = count($reference_tests_id);
+        // $count = count($reference_tests_id);
+        $count = count($reference_tests_id ?? []);
 
         $reference_ids = [];
         $test_ids = [];
@@ -470,6 +519,7 @@ class STRController extends Controller
                 'remark_status' => 'approved',
                 'remark_date_time' => $formattedDateTime,
                 'observation' => $observation,
+                'amendment' => $amendment,
             ]);
             // Log audit details: STR creation
             AuditLogger::log('created', 'STR', 'STR No: ' . $issue_id);
@@ -658,7 +708,22 @@ class STRController extends Controller
             ->limit(12)
             ->get();
 
-        $strs = Str::with('user')->where('str_no', $sample_testing_report)->first();
+        // $strs = Str::with('user')->where('str_no', $sample_testing_report)->first();
+
+        $strs = Str::with([
+            'user',
+            'transaction',
+            'transaction.contact',
+            'transaction.delivryperson',
+            'transaction.brand',
+            'creator',
+            'verifier',
+            'approver',
+            'rejector',
+            'qarejector',
+        ])->where('str_no', $sample_testing_report)->first();
+
+
         // Perform the initial query
         $strss = Str::with('batch', 'contract', 'contact', 'product', 'transaction', 'assoc_test', 'activeptr', 'ptr')
             ->where('str_no', $sample_testing_report)
@@ -694,8 +759,16 @@ class STRController extends Controller
 
 
         // Fetch the latest observation
+        // $sarr = PTR_STR_Approval::where('ptr/str_no', $sample_testing_report)
+        //     ->whereNotNull('observation')
+        //     ->orderBy('remark_date_time', 'desc')
+        //     ->first();
+        // Fetch the latest observation or amendment
         $sarr = PTR_STR_Approval::where('ptr/str_no', $sample_testing_report)
-            ->whereNotNull('observation')
+            ->where(function ($query) {
+                $query->whereNotNull('observation')
+                    ->orWhereNotNull('amendment');
+            })
             ->orderBy('remark_date_time', 'desc')
             ->first();
         // dd($sarr);
@@ -1935,6 +2008,7 @@ class STRController extends Controller
                     'remark_status' => 'quality_remarked',
                     'remark_date_time' => $formattedDateTime,
                     'observation' => $request->observation,
+                    'amendment' => $request->amendment ?? null,
                 ]);
 
                 AuditLogger::log('remarked', 'STR', 'STR No: ' . $request->str_no . ' with observation: [' . $request->observation . ']');
@@ -1948,6 +2022,7 @@ class STRController extends Controller
                     'remark_status' => 'oc_remarked',
                     'remark_date_time' => $formattedDateTime,
                     'observation' => $request->observation,
+                    'amendment' => $request->amendment ?? null,
                 ]);
 
                 AuditLogger::log('remarked', 'STR', 'STR No: ' . $request->str_no . ' with OC observation: [' . $request->observation . ']');

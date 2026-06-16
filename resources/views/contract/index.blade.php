@@ -83,74 +83,12 @@
                         <th class="col-md-2">@lang('product.contract_no')</th>
                         <th class="col-md-2">@lang('product.contract_type')</th>
                         <th>Fiscal Year</th>
-                        @foreach (\App\Contract::getMonths() as $monthNum => $monthName)
-                            <th>{{ $monthName }}</th>
-                        @endforeach
+                        <th>Instalments</th>
                         <th class="no-print">@lang('lang_v1.actions')</th>
                     </tr>
                 </thead>
                 <tbody id="contract_table_body">
-                    @foreach ($contracts as $contract)
-                        <tr data-id="{{ $contract->id }}">
-                            @can('others.edit_fiscal_year')
-                                <td>
-                                    <input type="checkbox" class="contract-checkbox" value="{{ $contract->id }}">
-                                </td>
-                            @endcan
-                            <td>{{ $contract->created_at->format('d-m-y') }}</td>
-                            <td>{{ @$contract->supplier->supplier_business_name }}</td>
-                            <td>{{ $contract->number }}</td>
-                            <td>{{ ucwords($contract->type) }}</td>
-                            <td>
-                                @if ($contract->fiscalYear)
-                                    <span class="badge bg-default">{{ $contract->fiscalYear->name }}</span>
-                                @else
-                                    <span class="label bg-gray">Not assigned</span>
-                                @endif
-                            </td>
-
-                            {{-- Monthly received quantity columns --}}
-                            @php
-                                $months = \App\Contract::getMonths();
-                                $logsKeyedByMonth = $contract->monthlyLogs->keyBy('month');
-                            @endphp
-
-                            @foreach ($months as $monthNum => $monthName)
-                                @php $log = $logsKeyedByMonth->get($monthNum); @endphp
-                                <td>
-                                    @if ($log && $log->received_quantity > 0)
-                                        <span title="Contract Qty: {{ number_format($log->contract_quantity, 0) }}">
-                                            {{ number_format($log->received_quantity, 0) }}
-                                        </span>
-                                    @else
-                                        --
-                                    @endif
-                                </td>
-                            @endforeach
-
-                            <td style="padding: 10px; text-align: left;">
-                                <div class="dropdown">
-                                    <button class="btn btn-primary btn-xs dropdown-toggle" type="button"
-                                        id="actionMenu{{ $contract->id }}" data-toggle="dropdown" aria-haspopup="true"
-                                        aria-expanded="false">
-                                        @lang('lang_v1.actions') <span class="caret"></span>
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="actionMenu{{ $contract->id }}">
-                                        @can('contract.edit')
-                                            <a href="{{ route('contracts.edit', $contract->id) }}" class="dropdown-item">
-                                                <i class="fas fa-edit"></i> @lang('messages.edit')
-                                            </a>
-                                        @endcan
-                                        @can('contract.view')
-                                            <a href="{{ route('contracts.view', $contract->id) }}" class="dropdown-item">
-                                                <i class="fas fa-eye"></i> @lang('messages.view')
-                                            </a>
-                                        @endcan
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
+                    {{-- Server side se aayega --}}
                 </tbody>
             </table>
         @endcomponent
@@ -286,6 +224,10 @@
             font-size: 16px;
         }
 
+        #contractsTable {
+            width: 100% !important;
+        }
+
         /* Pehle wala remove karein ya replace karein */
         #contractsTable th {
             white-space: nowrap;
@@ -306,67 +248,99 @@
         $(document).ready(function() {
             // Initialize DataTable
             var table = $('#contractsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                autoWidth: true,
+                ajax: {
+                    url: "{{ route('contracts.index') }}",
+                    data: function(d) {
+                        d.contract_no = $('#contract_no_filter').val();
+                    }
+                },
                 order: [
                     [1, 'desc']
                 ],
                 scrollX: true,
                 scrollCollapse: true,
-                // columnDefs: [{
-                //         orderable: false,
-                //         targets: [0, 9]
-                //     },
-                //     {
-                //         searchable: false,
-                //         targets: [0, 9]
-                //     }
-                // ],
-                columnDefs: [{
-                        orderable: false,
-                        targets: [0, -1]
+                columns: [
+                    @can('others.edit_fiscal_year')
+                        {
+                            data: 'checkbox',
+                            name: 'checkbox',
+                            orderable: false,
+                            searchable: false
+                        },
+                    @endcan {
+                        data: 'date',
+                        name: 'created_at',
+                        className: 'no-print'
                     },
                     {
+                        data: 'supplier_name',
+                        name: 'supplier_name'
+                    },
+                    {
+                        data: 'number',
+                        name: 'number'
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'fiscal_year',
+                        name: 'fiscal_year',
+                        orderable: false
+                    },
+                    {
+                        data: 'instalment',
+                        name: 'instalment',
+                        orderable: false
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
                         searchable: false,
-                        targets: [0, -1]
+                        className: 'no-print'
                     }
                 ],
+                columnDefs: [{
+                    orderable: false,
+                    targets: [0, -1]
+                }, {
+                    searchable: false,
+                    targets: [0, -1]
+                }],
                 buttons: [{
                         extend: 'print',
                         text: 'Print',
                         className: 'buttons-print',
                         exportOptions: {
                             columns: ':not(.no-print)',
-                            format: {
-                                body: function(data, row, column, node) {
-                                    // Skip the checkbox column when printing
-                                    return column === 0 ? '' : data;
-                                }
-                            }
                         },
                         customize: function(win) {
                             logPrintEvent();
-
                             $(win.document.body).find('h1').remove();
                             var defaultTitle = $('title').text();
                             var reportTitle = defaultTitle.split(' - ')[0] + ' Report';
-
                             var header = $(`
-                                <header style="padding: 10px;">
-                                    <div class="row header" style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div class="col-md-2 mt-3">
-                                            <img src="{{ asset('dummy/paklogo4.png') }}" width="100px" />
-                                        </div>
-                                        <div class="col-md-8" style="text-align: center;">
-                                            <h4 style="font-weight: bold;">ARMED FORCES MEDICAL STORES LABORATORY</h4>
-                                            <hr style="margin: 5px 0;">
-                                            <h5 style="font-weight: bold;">${reportTitle}</h5>
-                                        </div>
-                                        <div class="col-md-2 mt-3" style="text-align: end;">
-                                            <img src="{{ asset('dummy/AFMS LOGO-01.png') }}" width="110px" />
-                                        </div>
-                                    </div>
-                                </header>
-                            `);
-
+                    <header style="padding: 10px;">
+                        <div class="row header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="col-md-2 mt-3">
+                                <img src="{{ asset('dummy/paklogo4.png') }}" width="100px" />
+                            </div>
+                            <div class="col-md-8" style="text-align: center;">
+                                <h4 style="font-weight: bold;">ARMED FORCES MEDICAL STORES LABORATORY</h4>
+                                <hr style="margin: 5px 0;">
+                                <h5 style="font-weight: bold;">${reportTitle}</h5>
+                            </div>
+                            <div class="col-md-2 mt-3" style="text-align: end;">
+                                <img src="{{ asset('dummy/AFMS LOGO-01.png') }}" width="110px" />
+                            </div>
+                        </div>
+                    </header>
+                `);
                             $(win.document.body).prepend(header);
                             $.get('/get-footer', function(footerContent) {
                                 $(win.document.body).append(footerContent);
@@ -489,23 +463,7 @@
 
             // Filter functionality
             $('#contract_no_filter').on('change', function() {
-                var contractNo = $(this).val();
-                $.ajax({
-                    url: "{{ route('contracts.index') }}",
-                    type: "GET",
-                    data: {
-                        contract_no: contractNo
-                    },
-                    success: function(response) {
-                        $('#contract_table_body').html($(response).find('#contract_table_body')
-                            .html());
-                        // Reinitialize checkboxes after content load
-                        initCheckboxes();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
+                table.ajax.reload();
             });
 
             // Function to update selection count and show/hide toolbar

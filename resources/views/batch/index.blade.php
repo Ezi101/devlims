@@ -1,68 +1,79 @@
 @extends('layouts.app')
-@section('title', __('batch.batch_report'))
+@section('title', 'Expired Batches')
 
 @section('content')
-    <!-- Content Header (Page header) -->
-
     <section class="content-header">
-        <h1>@lang('batch.batch_report')
-            <small>@lang('batch.m_batch_report')</small>
+        <h1>Expired Batches
+            <small>Manage expired batch logs</small>
         </h1>
-
     </section>
-    <!-- Main content -->
+
     <section class="content">
-        @component('components.filters', ['class' => 'box-primary','title' => __('Filters')])
-        <div class="form-group">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="sample" class="form-label">Sample</label>
-                    <select name="sample" id="sample" class="form-control select2">>
-                        <option value="" selected disabled>Select Option</option>
-                        <option value="">All</option>
-                        @foreach ($sample as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }} <small>{{ $s->pv_number }}</small></option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="from_date" class="form-label">From Date</label>
-                    <input type="date" class="form-control" name="from_date" id="from_date">
-                </div>
-                <div class="col-md-4">
-                    <label for="to_date" class="form-label">To Date</label>
-                    <input type="date" class="form-control" name="to_date" id="to_date">
-                </div>
-            </div>
-        </div>
-        @endcomponent
         @component('components.widget', ['class' => 'box-primary'])
-            {{-- index table  --}}
-            <div class="row" id="printSection">
+            <div class="row">
                 <div class="col-md-12">
                     <div class="nav-tabs-custom">
                         <div class="tab-content">
                             <div class="tab-pane active">
-
-                                <table class="table dataTable table-striped ajax_view hide-footer" id="batch_table">
+                                <table class="table dataTable table-striped" id="expired_batch_table">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Batch</th>
-                                            <th scope="col">Sample</th>
-                                            <th scope="col">Created Date</th>
+                                            <th>#</th>
+                                            <th>Batch Code</th>
+                                            <th>Sample / Product</th>
+                                            <th>Mfg Date</th>
+                                            <th>Expiry Date</th>
+                                            <th>Days Expired</th>
                                         </tr>
                                     </thead>
-                                
                                     <tbody>
+                                        @foreach ($expiredBatches as $index => $batch)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td><strong>{{ $batch->code }}</strong></td>
+                                                <td>{{ $batch->product->name ?? '--' }}</td>
+                                                <td>{{ $batch->mfg_date ?? '--' }}</td>
+                                                <td class="text-danger">
+                                                    <strong>{{ $batch->expiry_date }}</strong>
+                                                </td>
+                                                <td>
+                                                    @php
+                                                        $days = '--';
+                                                        try {
+                                                            $expiry = $batch->expiry_date;
+                                                            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $expiry)) {
+                                                                $date = \Carbon\Carbon::parse($expiry);
+                                                            } elseif (preg_match('/^\d{2}-\d{4}$/', $expiry)) {
+                                                                $date = \Carbon\Carbon::createFromFormat(
+                                                                    'm-Y',
+                                                                    $expiry,
+                                                                )->endOfMonth();
+                                                            } elseif (preg_match('/^\d{2}-\d{2}$/', $expiry)) {
+                                                                $date = \Carbon\Carbon::createFromFormat(
+                                                                    'm-y',
+                                                                    $expiry,
+                                                                )->endOfMonth();
+                                                            } else {
+                                                                $date = \Carbon\Carbon::parse($expiry);
+                                                            }
+                                                            $days = $date->diffInDays(now());
+                                                        } catch (\Exception $e) {
+                                                            $days = '?';
+                                                        }
+                                                    @endphp
+                                                    @if ($days !== '--' && $days !== '?')
+                                                        <span class="badge badge-danger">{{ $days }} days ago</span>
+                                                    @else
+                                                        <span class="badge badge-warning">{{ $days }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
-                                
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal fade batches_edit" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
                 </div>
             </div>
         @endcomponent
@@ -70,5 +81,19 @@
 @endsection
 
 @section('javascript')
-    @include('batch.script');
+    <script>
+        "use strict"
+        $(document).ready(function() {
+            $('#expired_batch_table').DataTable({
+                language: {
+                    search: '<i class="fa fa-search"></i>',
+                    searchPlaceholder: "Search Batch"
+                },
+                order: [
+                    [5, 'desc']
+                ],
+                pageLength: 25,
+            });
+        });
+    </script>
 @endsection

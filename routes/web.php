@@ -581,6 +581,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/batch/list/test/{batch_id}', [BatchController::class, 'get_test_list']);
     Route::get('/batch/list/strs/{batch_id}', [BatchController::class, 'get_str_list']);
     Route::post('/batch-stock/save', [BatchController::class, 'save']);
+    Route::get('batch/expired', [BatchController::class, 'expiredBatches'])->name('batch.expired');
 
     Route::resource('messageboxes', MessageboxController::class);
 
@@ -685,6 +686,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/samples/recevied-stock/index', [PurchaseController::class, 'index'])->name('purchase.view');
     // new route for index
     Route::get('/received-stock/indexnew', [PurchaseController::class, 'indexNew'])->name('received-stock.indexnew');
+    Route::post('/purchases/save-disclaimer', [PurchaseController::class, 'saveDisclaimer'])
+        ->name('purchases.save-disclaimer');
     Route::get('/samples/return-log-data/return', [PurchaseController::class, 'returnLog'])->name('purchase.views');
 
     Route::get('/samples/issue-sample/create/workflow', [PurchaseController::class, 'create_workflow_and_test_with_sample_issue']);

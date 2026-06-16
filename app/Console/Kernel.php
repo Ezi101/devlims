@@ -40,6 +40,7 @@ class Kernel extends ConsoleKernel
 
         // $schedule->command('notifications:cleanup')->everyweek();
         $schedule->command('notifications:cleanup')->weekly()->fridays()->at('20:00');
+        $schedule->command('batch:check-expiry')->dailyAt('08:00');
 
         $schedule->call(function () {
             app(WhatsAppController::class)->sendMessage();

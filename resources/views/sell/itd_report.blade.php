@@ -241,11 +241,11 @@
                             <th>Under<br>Sampling</th>
                             <th>Under<br>Transit</th>
                             <th>Testing<br>U/P</th>
-                            <th>Accepted<br>by AFIMS</th>
-                            <th>Bulk<br>Stamping U/P</th>
-                            <th>IEI Date</th>
-                            <th>I Note<br>Date</th>
                             <th>E/U Opinion<br>Awaited</th>
+                            <th>IEI Date</th>
+                            <th>Bulk<br>Stamping U/P</th>
+                            <th>Accepted<br>by AFIMS</th>
+                            <th>I Note<br>Date</th>
                             <th>Case<br>Ref</th>
                             <th>Bal<br>U/Process</th>
                         </tr>
@@ -456,15 +456,15 @@
                         html += '<td>' + (row.not_offered || 0) + '</td>'; // Not Offered
                         html += '<td>' + (row.cancelled || 0) + '</td>'; // Offer Ltr Cancelled
                         html += '<td>' + (row.sampling || 0) + '</td>'; // Under Sampling
-                        html += '<td>' + (row.transit || 0) + '</td>';
+                        html += '<td>' + (row.transit || 0) + '</td>'; // Under Transit
                         html += '<td>' + (row.testing || 0) + '</td>'; // Testing U/P
-                        html += '<td>' + (row.accepted || 0) + '</td>'; // Accepted by AFIMS
-                        html += '<td>' + (row.bulk || 0) + '</td>'; // Bulk Stamping U/P
-                        html += '<td>' + (row.iei || 0) + '</td>'; // IEI Date       ✅
-                        html += '<td>' + (row.i_note || 0) + '</td>'; // I Note Date    ✅
-                        html += '<td>' + (row.eu || 0) + '</td>'; // E/U Opinion    ✅
-                        html += '<td>' + (row.case_ref || 0) + '</td>'; // Case Ref       ✅
-                        html += '<td>' + (row.bal || 0) + '</td>'; // Bal U/Process  ✅
+                        html += '<td>' + (row.eu || 0) + '</td>'; // E/U Opinion ✅
+                        html += '<td>' + (row.iei || 0) + '</td>'; // IEI Date ✅
+                        html += '<td>' + (row.bulk || 0) + '</td>'; // Bulk Stamping U/P ✅
+                        html += '<td>' + (row.accepted || 0) + '</td>'; // Accepted by AFIMS ✅
+                        html += '<td>' + (row.i_note || 0) + '</td>'; // I Note Date ✅
+                        html += '<td>' + (row.case_ref || 0) + '</td>'; // Case Ref ✅
+                        html += '<td>' + (row.bal || 0) + '</td>'; // Bal U/Process ✅
                         html += '</tr>';
                     });
 
@@ -478,13 +478,13 @@
                     html += '<td><b>' + catTotals.sampling + '</b></td>';
                     html += '<td><b>' + catTotals.transit + '</b></td>';
                     html += '<td><b>' + catTotals.testing + '</b></td>';
-                    html += '<td><b>' + catTotals.accepted + '</b></td>';
-                    html += '<td><b>' + catTotals.bulk + '</b></td>';
-                    html += '<td><b>' + catTotals.iei + '</b></td>'; // IEI Date    ✅
-                    html += '<td><b>' + catTotals.i_note + '</b></td>'; // I Note Date ✅
                     html += '<td><b>' + catTotals.eu + '</b></td>'; // E/U Opinion ✅
-                    html += '<td><b>' + catTotals.case_ref + '</b></td>'; // Case Ref    ✅
-                    html += '<td><b>' + catTotals.bal + '</b></td>'; // Bal         ✅
+                    html += '<td><b>' + catTotals.iei + '</b></td>'; // IEI Date ✅
+                    html += '<td><b>' + catTotals.bulk + '</b></td>'; // Bulk Stamping ✅
+                    html += '<td><b>' + catTotals.accepted + '</b></td>'; // Accepted ✅
+                    html += '<td><b>' + catTotals.i_note + '</b></td>'; // I Note ✅
+                    html += '<td><b>' + catTotals.case_ref + '</b></td>'; // Case Ref ✅
+                    html += '<td><b>' + catTotals.bal + '</b></td>'; // Bal ✅
                     html += '</tr>';
 
                     Object.keys(grandTotal).forEach(function(k) {
@@ -502,13 +502,13 @@
                 html += '<td><b>' + grandTotal.sampling + '</b></td>';
                 html += '<td><b>' + grandTotal.transit + '</b></td>';
                 html += '<td><b>' + grandTotal.testing + '</b></td>';
-                html += '<td><b>' + grandTotal.accepted + '</b></td>';
-                html += '<td><b>' + grandTotal.bulk + '</b></td>';
-                html += '<td><b>' + grandTotal.iei + '</b></td>'; // IEI Date    ✅
-                html += '<td><b>' + grandTotal.i_note + '</b></td>'; // I Note Date ✅
                 html += '<td><b>' + grandTotal.eu + '</b></td>'; // E/U Opinion ✅
-                html += '<td><b>' + grandTotal.case_ref + '</b></td>'; // Case Ref    ✅
-                html += '<td><b>' + grandTotal.bal + '</b></td>'; // Bal         ✅
+                html += '<td><b>' + grandTotal.iei + '</b></td>'; // IEI Date ✅
+                html += '<td><b>' + grandTotal.bulk + '</b></td>'; // Bulk Stamping ✅
+                html += '<td><b>' + grandTotal.accepted + '</b></td>'; // Accepted ✅
+                html += '<td><b>' + grandTotal.i_note + '</b></td>'; // I Note ✅
+                html += '<td><b>' + grandTotal.case_ref + '</b></td>'; // Case Ref ✅
+                html += '<td><b>' + grandTotal.bal + '</b></td>'; // Bal ✅
                 html += '</tr>';
 
                 $('#itd_summary_body').html(html);

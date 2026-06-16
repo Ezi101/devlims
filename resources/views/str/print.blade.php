@@ -583,7 +583,7 @@
 
             <div class="col-md-8 mt-3" style="text-align: center;">
                 <h4>ARMED FORCES MEDICAL STORES LABORATORY</h4>
-                <h4>(AFMSL) Chaklala</h4>
+                <h4>(AFMSL) Chaklala / Rawalpindi</h4>
                 <h5 style="font-weight: bold; text-decoration: underline;margin-top:12px; font-size:15px;">SAMPLE TEST
                     REPORT</h5>
 
@@ -860,6 +860,26 @@
 
                             </tr>
                             <tr>
+                                <td><strong>Customer Name</strong></td>
+                                <td>
+                                    {{ $strs->transaction->delivryperson->name ??
+                                        ($strs->transaction->contact->name ?? ($strs->transaction->contact->supplier_business_name ?? '-')) }}
+                                </td>
+                                <td><strong>Contact No</strong></td>
+                                <td>
+                                    @php
+                                        $dp = $strs->transaction->delivryperson ?? null;
+                                        $phone = $dp && !empty($dp->phone) && $dp->phone != '0' ? $dp->phone : null;
+                                        $mobile =
+                                            !empty($strs->transaction->contact->mobile) &&
+                                            $strs->transaction->contact->mobile != '0'
+                                                ? $strs->transaction->contact->mobile
+                                                : '-';
+                                    @endphp
+                                    {{ $phone ?? $mobile }}
+                                </td>
+                            </tr>
+                            <tr>
                                 {{--                               
                                 <td><strong>Sample Name:</strong></td>
                                 <td>{{ $strs->product->name ?? '-' }}</td> --}}
@@ -903,7 +923,18 @@
                                     @endforeach
                                 </td>
                                 <td><strong>Test Date</strong></td>
-                                <td> {{ isset($refer_tests->created_at) ? \Carbon\Carbon::parse($refer_tests->created_at)->format('d-M-Y') : '-' }}
+                                <td>
+                                    @php
+                                        $refIds = collect($strss)
+                                            ->flatMap(function ($d) {
+                                                return json_decode($d->refernce_test_id) ?? [];
+                                            })
+                                            ->filter()
+                                            ->values();
+
+                                        $lastTestDate = \App\TestBatch::whereIn('id', $refIds)->max('updated_at');
+                                    @endphp
+                                    {{ $lastTestDate ? \Carbon\Carbon::parse($lastTestDate)->format('d-M-Y') : '-' }}
                                 </td>
                             </tr>
                             <tr>
@@ -1307,10 +1338,43 @@
                 </p>
             @endif
 
+            {{-- @if (isset($sarr->observation))
+                <p style="font-size: 13px; text-decoration: underline;">
+                    <strong>Opinion and Interpretation:</strong>
+                    <span>{{ $sarr->observation }}</span>
+                </p>
+            @endif --}}
             @if (isset($sarr->observation))
                 <p style="font-size: 13px; text-decoration: underline;">
-                    <strong>Observations:</strong>
+                    <strong>Opinion and Interpretation:</strong> {{-- ✅ single colon --}}
                     <span>{{ $sarr->observation }}</span>
+                </p>
+            @endif
+
+            {{-- ✅ Statement of Conformity --}}
+            <p style="font-size: 13px;">
+                <strong style="text-decoration: underline;">Statement of Conformity:</strong>
+                @if ($strs->status == 'approved')
+                    The sample conforms to the prescribed specifications.
+                @elseif ($strs->status == 'rejectd')
+                    The sample does not conform to the prescribed specifications.
+                @else
+                    Pending approval.
+                @endif
+            </p>
+
+            {{-- ✅ Disclaimer --}}
+            <p style="font-size: 11px; font-style: italic; margin-top: 5px;">
+                <strong style="text-decoration: underline;">Disclaimer:</strong>
+                This report relates only to the sample(s) tested. It shall not be reproduced except in full, without
+                written approval of the laboratory.
+            </p>
+
+            {{-- ✅ Amendment to Report --}}
+            @if (!empty($sarr->amendment))
+                <p style="font-size: 13px; margin-top: 5px;">
+                    <strong style="text-decoration: underline;">Amendment to Report:</strong>
+                    <span>{{ $sarr->amendment }}</span>
                 </p>
             @endif
 
@@ -1663,7 +1727,7 @@
         });
     </script>
 
-    <script>
+    {{-- <script>
         $('#saveRemark').click(function() {
             var observation = $('#observation').val();
             var str_no = '{{ @$strs->str_no }}'; // Make sure str_no is available
@@ -1700,6 +1764,73 @@
                 },
                 error: function(xhr) {
                     console.error('AJAX Error:', xhr); // Log the entire error response
+                    swal({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again later.'
+                    });
+                }
+            });
+        });
+    </script> --}}
+    <script>
+        // Amendment checkbox toggle
+        $('#amendmentCheckbox').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#amendmentSection').slideDown(300);
+            } else {
+                $('#amendmentSection').slideUp(300);
+                $('#amendment').val('');
+            }
+        });
+
+        $('#saveRemark').click(function() {
+            var observation = $('#observation').val();
+            var str_no = '{{ @$strs->str_no }}';
+            var amendment = '';
+
+            if ($('#amendmentCheckbox').is(':checked')) {
+                amendment = $('#amendment').val();
+                if (!amendment.trim()) {
+                    swal({
+                        icon: 'warning',
+                        title: 'Amendment Required',
+                        text: 'Amendment details likhein ya checkbox uncheck karein.'
+                    });
+                    return;
+                }
+            }
+
+            $.ajax({
+                url: '{{ route('str.update.observation') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    observation: observation,
+                    amendment: amendment,
+                    str_no: str_no
+                },
+                success: function(response) {
+                    if (response.success) {
+                        swal({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.msg
+                        }).then(() => {
+                            $('#observationModal').modal('hide');
+                            fetchLatestObservation(str_no);
+                            location.reload();
+                        });
+                    } else {
+                        swal({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.msg
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr);
                     swal({
                         icon: 'error',
                         title: 'Oops...',

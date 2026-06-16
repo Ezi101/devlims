@@ -572,8 +572,8 @@
                         orderable: false
                     },
                     {
-                        data: 'inst_shipment',
-                        name: 'inst_shipment',
+                        data: 'inst_transit',
+                        name: 'inst_transit',
                         searchable: false,
                         orderable: false
                     },

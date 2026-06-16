@@ -263,11 +263,11 @@
                         </div>
                         {{-- 2. DD Date --}}
                         <div class="form-group col-sm-3">
-                            {!! Form::label('inst1_dd_date', 'DD Date:') !!}
+                            {!! Form::label('inst1_dd_date', 'DP Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst1_dd_date', null, [
                                     'class' => 'form-control form-control-sm datepicker dd-date-field',
-                                    'placeholder' => 'DD Date',
+                                    'placeholder' => 'DP Date',
                                     'readonly',
                                     'data-inst' => '1',
                                 ]) !!}
@@ -411,11 +411,11 @@
                         </div>
                         {{-- 2. DD Date --}}
                         <div class="form-group col-sm-3">
-                            {!! Form::label('inst2_dd_date', 'DD Date:') !!}
+                            {!! Form::label('inst2_dd_date', 'DP Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst2_dd_date', null, [
                                     'class' => 'form-control form-control-sm datepicker dd-date-field',
-                                    'placeholder' => 'DD Date',
+                                    'placeholder' => 'DP Date',
                                     'readonly',
                                     'data-inst' => '2',
                                 ]) !!}
@@ -560,11 +560,11 @@
                         </div>
                         {{-- 2. DD Date --}}
                         <div class="form-group col-sm-3">
-                            {!! Form::label('inst3_dd_date', 'DD Date:') !!}
+                            {!! Form::label('inst3_dd_date', 'DP Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst3_dd_date', null, [
                                     'class' => 'form-control form-control-sm datepicker dd-date-field',
-                                    'placeholder' => 'DD Date',
+                                    'placeholder' => 'DP Date',
                                     'readonly',
                                     'data-inst' => '3',
                                 ]) !!}
@@ -711,11 +711,11 @@
                         </div>
                         {{-- 2. DD Date --}}
                         <div class="form-group col-sm-3">
-                            {!! Form::label('inst4_dd_date', 'DD Date:') !!}
+                            {!! Form::label('inst4_dd_date', 'DP Date:') !!}
                             <div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 {!! Form::text('inst4_dd_date', null, [
                                     'class' => 'form-control form-control-sm datepicker dd-date-field',
-                                    'placeholder' => 'DD Date',
+                                    'placeholder' => 'DP Date',
                                     'readonly',
                                     'data-inst' => '4',
                                 ]) !!}

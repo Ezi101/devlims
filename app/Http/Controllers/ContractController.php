@@ -64,25 +64,96 @@ class ContractController extends Controller
         ];
     }
 
+    // public function index(Request $request)
+    // {
+    //     $business_id = $request->session()->get('user.business_id');
+    //     $query = Contract::where('business_id', $business_id);
+    //     // dd($query->toSql());
+
+    //     if ($request->ajax()) {
+    //         if ($request->filled('contract_no')) {
+    //             $query->where('number', 'like', '%' . $request->contract_no . '%');
+    //         }
+    //         $contracts = $query->get();
+
+    //         return view('contract.partials.contract_table', compact('contracts'))->render();
+    //     }
+
+    //     $contracts = $query->get();
+
+    //     $fiscal_years = FiscalYear::all();
+
+    //     return view('contract.index', compact('contracts', 'fiscal_years'));
+    // }
     public function index(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
-        $query = Contract::where('business_id', $business_id);
 
         if ($request->ajax()) {
-            if ($request->filled('contract_no')) {
-                $query->where('number', 'like', '%' . $request->contract_no . '%');
-            }
-            $contracts = $query->get();
+            $contracts = Contract::where('business_id', $business_id)
+                ->with(['supplier', 'fiscalYear']);
 
-            return view('contract.partials.contract_table', compact('contracts'))->render();
+            if ($request->filled('contract_no')) {
+                $contracts->where('number', 'like', '%' . $request->contract_no . '%');
+            }
+
+            return Datatables::of($contracts)
+                ->addColumn('date', fn($c) => $c->created_at->format('d-m-y'))
+                ->addColumn('supplier_name', fn($c) => $c->supplier->supplier_business_name ?? '-')
+                ->addColumn('fiscal_year', function ($c) {
+                    if ($c->fiscalYear) {
+                        return '<span class="badge bg-default">' . $c->fiscalYear->name . '</span>';
+                    }
+                    return '<span class="label bg-gray">Not assigned</span>';
+                })
+                ->addColumn('instalment', function ($c) {
+                    // Count karo kitni installments actually aayi hain (non-null)
+                    $received = collect([
+                        $c->{'1st_installment'},
+                        $c->{'2nd_installment'},
+                        $c->{'3rd_installment'},
+                        $c->{'4rt_installment'},
+                        $c->{'5th_installment'},
+                    ])->filter(fn($v) => !is_null($v))->count();
+
+                    return match ($received) {
+                        0 => '--',
+                        1 => '1st',
+                        2 => '2nd',
+                        3 => '3rd',
+                        4 => '4th',
+                        5 => '5th',
+                        default => '--'
+                    };
+                })
+                ->addColumn('action', function ($c) use ($business_id) {
+                    $html = '<div class="dropdown">
+                    <button class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+                        Actions <span class="caret"></span>
+                    </button>
+                    <div class="dropdown-menu">';
+                    if (auth()->user()->can('contract.edit')) {
+                        $html .= '<a href="' . route('contracts.edit', $c->id) . '" class="dropdown-item">
+                        <i class="fas fa-edit"></i> Edit</a>';
+                    }
+                    if (auth()->user()->can('contract.view')) {
+                        $html .= '<a href="' . route('contracts.view', $c->id) . '" class="dropdown-item">
+                        <i class="fas fa-eye"></i> View</a>';
+                    }
+                    $html .= '</div></div>';
+                    return $html;
+                })
+                ->addColumn('checkbox', fn($c) => '<input type="checkbox" class="contract-checkbox" value="' . $c->id . '">')
+                ->setRowAttr(['data-id' => fn($c) => $c->id])
+                ->rawColumns(['fiscal_year', 'action', 'checkbox'])
+                ->make(true);
         }
 
-        $contracts = $query->get();
-
         $fiscal_years = FiscalYear::all();
+        $contracts = Contract::where('business_id', $business_id)
+            ->get(['number']); // Sirf filter dropdown ke liye
 
-        return view('contract.index', compact('contracts', 'fiscal_years'));
+        return view('contract.index', compact('fiscal_years', 'contracts'));
     }
 
     /**
@@ -661,8 +732,40 @@ class ContractController extends Controller
                 }
             }
         }
+        // STR Date fetch karo installment wise
+        $strRecords = DB::table('s_t_r')
+            ->where('contract_no', $contract->id)
+            ->where('status', 'approved')
+            ->select('approved_at', 'batch_no')
+            ->get();
+
+        foreach ($strRecords as $str) {
+            if (empty($str->approved_at)) continue;
+
+            // Direct purchaselines se batch_no se transaction dhundo
+            $purchaseLine = DB::table('purchase_lines')
+                ->where('batch_no', $str->batch_no)
+                ->whereNotNull('transaction_id')
+                ->first();
+
+            if ($purchaseLine) {
+                $txn = DB::table('transactions')
+                    ->where('id', $purchaseLine->transaction_id)
+                    ->where('contract_no', $contract->id)
+                    ->select('instalments')
+                    ->first();
+
+                if ($txn && $txn->instalments) {
+                    $instNum = str_replace('instalments_', '', $txn->instalments);
+                    if (isset($installmentDates[$instNum])) {
+                        $installmentDates[$instNum]['str_date'] = date('Y-m-d', strtotime($str->approved_at));
+                    }
+                }
+            }
+        }
 
         $contract->installment_dates = $installmentDates;
+
 
         return view('contract.edit', compact(
             'contract',

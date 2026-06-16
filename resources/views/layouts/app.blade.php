@@ -125,7 +125,7 @@
 
     @include('layouts.partials.javascripts')
 
-    
+
     <div class="modal fade view_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
 
     @if (!empty($__additional_views) && is_array($__additional_views))
@@ -133,7 +133,10 @@
             @includeIf($additional_view)
         @endforeach
     @endif
-    <script src="{{ asset('js/fullcalendar.min.js') }}"></script>
+    {{-- <script src="{{ asset('js/fullcalendar.min.js') }}"></script> --}}
+    @if (!Request::is('batch/expired'))
+        <script src="{{ asset('js/fullcalendar.min.js') }}"></script>
+    @endif
     @php
         $business_id = request()->session()->get('user.business_id');
 
@@ -250,8 +253,9 @@
         });
 
     </script> --}}
-
-    <script src="{{ asset('js/kit.fontawesome.com/58d91d1e4e.js') }}" crossorigin="anonymous"></script>
+    @if (!Request::is('batch/expired'))
+        <script src="{{ asset('js/kit.fontawesome.com/58d91d1e4e.js') }}" crossorigin="anonymous"></script>
+    @endif
     <link rel="stylesheet" src="{{ asset('css/all.css') }}">
 </body>
 

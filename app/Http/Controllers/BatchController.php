@@ -12,7 +12,8 @@ use App\Helpers\AuditLogger;
 use Illuminate\Http\Request;
 use Modules\Project\Entities\Project;
 use Modules\Project\Entities\ProjectTask;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
+
 
 class BatchController extends Controller
 {
@@ -239,5 +240,66 @@ class BatchController extends Controller
     public function destroy($id)
     {
         //
+    }
+    public function expiredBatches(Request $request)
+    {
+        $businessId = auth()->user()->business_id;
+
+        $query = Batch::with('product')
+            ->where('business_id', $businessId)
+            ->whereNotNull('expiry_date')
+            ->where('expiry_date', '!=', '')
+            ->whereNotNull('code')
+            ->where('code', '!=', '-');
+
+        if ($request->ajax()) {
+            // PHP mein filter karein - mixed date formats ki wajah se
+            $allBatches = $query->get();
+
+            $expiredBatches = $allBatches->filter(function ($batch) {
+                try {
+                    $expiry = $batch->expiry_date;
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}/', $expiry)) {
+                        $date = \Carbon\Carbon::parse($expiry);
+                    } elseif (preg_match('/^\d{2}-\d{4}$/', $expiry)) {
+                        $date = \Carbon\Carbon::createFromFormat('m-Y', $expiry)->endOfMonth();
+                    } elseif (preg_match('/^\d{2}-\d{2}$/', $expiry)) {
+                        $date = \Carbon\Carbon::createFromFormat('m-y', $expiry)->endOfMonth();
+                    } else {
+                        return false;
+                    }
+                    return $date->isPast();
+                } catch (\Exception $e) {
+                    return false;
+                }
+            });
+
+            return Datatables::of($expiredBatches)
+                ->addColumn('product_name', function ($batch) {
+                    return $batch->product->name ?? '--';
+                })
+                ->addColumn('days_expired', function ($batch) {
+                    try {
+                        $expiry = $batch->expiry_date;
+                        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $expiry)) {
+                            $date = \Carbon\Carbon::parse($expiry);
+                        } elseif (preg_match('/^\d{2}-\d{4}$/', $expiry)) {
+                            $date = \Carbon\Carbon::createFromFormat('m-Y', $expiry)->endOfMonth();
+                        } elseif (preg_match('/^\d{2}-\d{2}$/', $expiry)) {
+                            $date = \Carbon\Carbon::createFromFormat('m-y', $expiry)->endOfMonth();
+                        } else {
+                            $date = \Carbon\Carbon::parse($expiry);
+                        }
+                        $days = $date->diffInDays(now());
+                        return '<span class="badge badge-danger">' . $days . ' days ago</span>';
+                    } catch (\Exception $e) {
+                        return '<span class="badge badge-warning">?</span>';
+                    }
+                })
+                ->rawColumns(['days_expired'])
+                ->make(true);
+        }
+
+        return view('batch.expired');
     }
 }

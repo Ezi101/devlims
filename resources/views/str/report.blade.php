@@ -410,11 +410,34 @@
                                     <input type="hidden" name="request_type" id="request_type" value="">
 
                                     <div class="remarkdata" style="margin-bottom: 15px;">
-                                        <label for="observation" style="font-weight: bold; margin-bottom: 5px;">
+                                        {{-- <label for="observation" style="font-weight: bold; margin-bottom: 5px;">
                                             <h2><b>Remarks</b></h2>
+                                        </label> --}}
+                                        <label for="observation" style="font-weight: bold; margin-bottom: 5px;">
+                                            <h2><b>Opinion and Interpretation</b></h2>
                                         </label>
-                                        <textarea name="observation" id="observation" cols="30" rows="6" placeholder="Add your observation..."
+                                        <textarea name="observation" id="observation" cols="30" rows="6"
+                                            placeholder="Add your opinion and interpretation..."
                                             style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; resize: none;" required></textarea>
+                                        {{-- Amendment Checkbox --}}
+                                        <div class="form-group mt-3" style="text-align: left;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="amendmentCheckbox"
+                                                    name="has_amendment">
+                                                <label class="form-check-label" for="amendmentCheckbox"
+                                                    style="font-size: 15px; font-weight: 600; color: #333;">
+                                                    Add Amendment to Report
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {{-- Amendment Textarea - hidden by default --}}
+                                        <div id="amendmentSection" style="display: none;">
+                                            <label style="font-weight: bold; margin-bottom: 5px;">Amendment Details</label>
+                                            <textarea name="amendment" id="amendment" cols="30" rows="4" placeholder="Enter amendment details..."
+                                                style="width: 100%; padding: 10px; border: 1px solid #ced4da; 
+                                                    border-radius: 5px; resize: none;"></textarea>
+                                        </div>
                                     </div>
 
                                     <div class="modal-footer" id="modal-footer" style="justify-content: space-between;">
@@ -512,6 +535,15 @@
             // On select change, fetch data for the selected reference test
             $('.strdataid').change(function() {
                 fetchDataForSelect(this);
+            });
+            // Amendment checkbox toggle
+            $('#amendmentCheckbox').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#amendmentSection').slideDown(300);
+                } else {
+                    $('#amendmentSection').slideUp(300);
+                    $('#amendment').val('');
+                }
             });
         });
     </script>

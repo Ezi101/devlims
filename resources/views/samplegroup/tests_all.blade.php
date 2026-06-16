@@ -66,6 +66,7 @@
                         <th>@lang('method.assign_to')</th>
 
                         <th>@lang('Assigned Date')</th>
+                        <th>@lang('Completed On')</th>
                         <th>@lang('method.status')</th>
                         {{-- <th>@lang('method.approval')</th> --}}
                         <th class="no-print">@lang('messages.action')</th>
@@ -281,7 +282,14 @@
                                     @endif
                                 </label>
                             </td>
-
+                            <td>
+                                @if (in_array($m->status, ['completed', 'approved', 'rejected']))
+                                    {{-- {{ \Carbon\Carbon::parse($m->updated_at)->format('d-M-Y | H:i') }} --}}
+                                    {{ \Carbon\Carbon::parse($m->updated_at)->format('d-m-Y H:i') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>
                                 @if ($m->status == 'completed')
                                     @php

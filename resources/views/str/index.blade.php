@@ -132,218 +132,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($strs as $s)
-                                                <tr>
-                                                    <td class="view except-td">
-                                                        <label class="custom-checkbox">
-                                                            <input class="select-row" name="str_no[]"
-                                                                value="{{ @$s->str_no }}" type="checkbox">
-                                                            <span class="checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td class="view">
-                                                        {{ \Carbon\Carbon::parse(@$s->created_at)->format('d-m-Y  h:i:s') }}
-                                                    </td>
-
-                                                    <td class="view">{{ @$s->product->name ?: '--' }}</td>
-                                                    <td>
-                                                        @if (!empty($s->product->genericNames))
-                                                            {{ implode(', ', array_column(json_decode($s->product->genericNames, true), 'name')) }}
-                                                        @else
-                                                            --
-                                                        @endif
-                                                    </td>
-                                                    <td class="view">{{ @$s->batch->code }}</td>
-                                                    <td class="view">{{ @$s->str_no }}</td>
-                                                    <td class="view">
-                                                        {{ @$s->contract->number ?? (@$s->transaction->source_name ?? 'N/A') }}
-                                                    </td>
-                                                    <td class="view">{{ @$s->creator->getUserFullNameAttribute() ?? '--' }}
-                                                    </td>
-                                                    <td class="view">
-                                                        @if ($s->status == 'approved')
-                                                            @php
-                                                                $status = __('lang_v1.approved');
-                                                                $bg = 'bg-green';
-                                                            @endphp
-                                                        @elseif ($s->status == 'rejectd')
-                                                            @php
-                                                                $status = __('lang_v1.rejected');
-                                                                $bg = 'bg-red';
-                                                            @endphp
-                                                        @elseif ($s->status == 'pending')
-                                                            @php
-                                                                $status = __('lang_v1.pending');
-                                                                $bg = 'bg-info';
-                                                            @endphp
-                                                        @endif
-
-                                                        <span class="label {{ @$bg }}">{{ @$status }}</span>
-                                                    </td>
-
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            @if ($s->status == 'approved' || ($s->status == 'rejected' && auth()->user()->can('str.view')))
-                                                                <a class="btn btn-default btn-xs"
-                                                                    href="{{ action([\App\Http\Controllers\STRController::class, 'show'], ['sample_testing_report' => $s->str_no]) }}">
-                                                                    <i class="fa fa-eye"></i> @lang('messages.view')
-                                                                </a>
-                                                            @else
-                                                                <button type="button"
-                                                                    class="action-button btn btn-default dropdown-toggle btn-xs"
-                                                                    data-toggle="dropdown" aria-expanded="true">
-                                                                    Actions <span class="caret"></span><span
-                                                                        class="sr-only">Toggle
-                                                                        Dropdown</span>
-                                                                </button>
-                                                                <ul class="dropdown-menu dropdown-menu-left" role="menu">
-                                                                    <li>
-                                                                        <a class="dropdown-item"
-                                                                            href="{{ action([\App\Http\Controllers\STRController::class, 'show'], ['sample_testing_report' => $s->str_no]) }}">
-                                                                            <i class="fa fa-eye"></i> @lang('messages.view')
-                                                                        </a>
-                                                                    </li>
-                                                                    {{-- <li>
-                                                                    @if (auth()->user()->can('str.edit'))
-                                                                        <a class="dropdown-item"
-                                                                            href="{{ action([\App\Http\Controllers\STRController::class, 'edit'], ['sample_testing_report' => $s->str_no]) }}">
-                                                                            <i class="fa fa-edit"></i> @lang('messages.edit')
-                                                                        </a>
-                                                                    @endif
-                                                                </li> --}}
-                                                                    {{-- 
-
-                                                                <li>
-                                                                    @if (auth()->user()->can('str.remark'))
-                                                                        <a class="dropdown-item"
-                                                                            href="{{ route('remarks', ['str_no' => $s->str_no]) }}">
-                                                                            <i class="fa fa-message"></i> @lang('messages.remark')
-                                                                        </a>
-                                                                    @endif
-                                                                </li>
-                                                                @php
-                                                                    $business_id = request()
-                                                                        ->session()
-                                                                        ->get('user.business_id');
-
-                                                                    if (
-                                                                        auth()
-                                                                            ->user()
-                                                                            ->hasRole('OC' . '#' . $business_id)
-                                                                    ) {
-                                                                        $ptr_str_approval = \App\PTR_STR_Approval::with(
-                                                                            [
-                                                                                'user' => function ($query) {
-                                                                                    $query
-                                                                                        ->where('is_cmmsn_agnt', 0)
-                                                                                        ->select(
-                                                                                            'id',
-                                                                                            DB::raw(
-                                                                                                "CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name",
-                                                                                            ),
-                                                                                        )
-                                                                                        ->whereHas('roles', function (
-                                                                                            $query,
-                                                                                        ) {
-                                                                                            $query->where(function (
-                                                                                                $subquery,
-                                                                                            ) {
-                                                                                                $subquery->where(
-                                                                                                    'name',
-                                                                                                    'like',
-                                                                                                    '%Quality Assurance%',
-                                                                                                );
-                                                                                            });
-                                                                                        });
-                                                                                },
-                                                                            ],
-                                                                        )
-                                                                            ->where('remark_status', 'approved')
-                                                                            ->where('ptr/str_no', $s->str_no)
-                                                                            ->get();
-                                                                    } elseif (
-                                                                        auth()
-                                                                            ->user()
-                                                                            ->hasRole(
-                                                                                'Quality Assurance' .
-                                                                                    '#' .
-                                                                                    $business_id,
-                                                                            )
-                                                                    ) {
-                                                                        $ptr_str_approval = \App\PTR_STR_Approval::with(
-                                                                            [
-                                                                                'user' => function ($query) {
-                                                                                    $query
-                                                                                        ->where('is_cmmsn_agnt', 0)
-                                                                                        ->select(
-                                                                                            'id',
-                                                                                            DB::raw(
-                                                                                                "CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name",
-                                                                                            ),
-                                                                                        )
-                                                                                        ->whereHas('roles', function (
-                                                                                            $query,
-                                                                                        ) {
-                                                                                            $query->where(function (
-                                                                                                $subquery,
-                                                                                            ) {
-                                                                                                $subquery->where(
-                                                                                                    'name',
-                                                                                                    'like',
-                                                                                                    '%Report Compiler%',
-                                                                                                );
-                                                                                            });
-                                                                                        });
-                                                                                },
-                                                                            ],
-                                                                        )
-                                                                            ->where('remark_status', 'approved')
-                                                                            ->where('ptr/str_no', $s->str_no)
-                                                                            ->get();
-                                                                    } else {
-                                                                        $ptr_str_approval = \App\PTR_STR_Approval::where(
-                                                                            'remark_status',
-                                                                            'approved',
-                                                                        )
-                                                                            ->where('ptr/str_no', $s->str_no)
-                                                                            ->get();
-                                                                    }
-
-                                                                    $ptr_str_approval = $ptr_str_approval->filter(
-                                                                        function ($item) {
-                                                                            return $item->user !== null;
-                                                                        },
-                                                                    );
-
-                                                                @endphp
-
-                                                                @if (($ptr_str_approval->isNotEmpty() && !$ptr_str_approval->isEmpty()) ||
-    auth()->user()->hasRole('Report Compiler' . '#' . $business_id))
-                                                                    <li>
-                                                                        @if (auth()->user()->can('str.approve_with_remarks'))
-                                                                            <a class="dropdown-item btn btn-modal"
-                                                                                data-href="{{ route('str_ptr_approval', ['ptr_str_no' => $s->str_no]) }}"
-                                                                                data-container=".ptr_str_approval">
-                                                                                <i class="fa fa-message"></i> @lang('STR APPROVAL')
-                                                                            </a>
-                                                                        @endif
-                                                                    </li>
-                                                                @endif --}}
-
-                                                                    {{-- <li>
-                                                                    <a class="dropdown-item"
-                                                                        href="{{ route('logs.index', ['module' => 'str']) }}">
-                                                                        <i class="fa-solid fa-clock-rotate-left"></i> Logs
-                                                                    </a>
-                                                                </li> --}}
-
-                                                                </ul>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-
-                                                </tr>
-                                            @endforeach
+                                            {{-- Data AJAX filter --}}
                                         </tbody>
                                     </table>
                                 </div>
@@ -551,6 +340,89 @@
             var batch = null;
             var contract = null;
 
+            // ✅ DataTable ek baar initialize karein
+            var table = $('#myTable').DataTable({
+                buttons: [{
+                    extend: 'print',
+                    text: 'Print',
+                    className: 'buttons-print',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    },
+                    customize: function(win) {
+                        logPrintEvent();
+                        $(win.document.body).find('h1').remove();
+                        var defaultTitle = $('title').text();
+                        var reportTitle = defaultTitle.split(' - ')[0] + ' Report';
+                        var pageBreakAdded = false;
+                        var header = $(`
+                        <header style="padding: 10px; z-index: 1000;">
+                            <div class="row header" style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="col-md-2 mt-3">
+                                    <img src="{{ asset('dummy/paklogo4.png') }}" width="100px" />
+                                </div>
+                                <div class="col-md-8" style="text-align: center;">
+                                    <h4 style="font-weight: bold;">ARMED FORCES MEDICAL STORES LABORATORY</h4>
+                                    <hr style="margin: 5px 0;">
+                                    <h5 style="font-weight: bold;">${reportTitle}</h5>
+                                </div>
+                                <div class="col-md-2 mt-3" style="text-align: end;">
+                                    <img src="{{ asset('dummy/AFMS LOGO-01.png') }}" width="110px" />
+                                </div>
+                            </div>
+                        </header>
+                    `);
+                        $(win.document.body).prepend(header);
+                        $.get('/get-footer', function(footerContent) {
+                            $(win.document.body).append(footerContent);
+                        });
+                        var currentPage = 0;
+                        var rowCount = 0;
+                        $(win.document.body).find('table').addClass('print-table');
+                        $(win.document.body).find('.print-table tr').each(function(index) {
+                            rowCount++;
+                            if (rowCount % 16 === 0) {
+                                currentPage++;
+                                $(this).after('<div class="page-break"></div>');
+                                pageBreakAdded = true;
+                            }
+                        });
+                        if (pageBreakAdded) {
+                            header.css('position', 'fixed');
+                            header.css('left', '0');
+                            header.css('right', '0');
+                            header.css('background-color', '#fff');
+                            $('<style>.print-table { position: relative; top: 150px; bottom: 150px; }</style>')
+                                .appendTo(win.document.head);
+                        }
+                    }
+                }, {
+                    extend: 'excel',
+                    text: 'Export to Excel',
+                    className: 'buttons-excel',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                }, {
+                    extend: 'pdf',
+                    text: 'Export to PDF',
+                    className: 'buttons-pdf',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                }, {
+                    extend: 'csv',
+                    text: 'Export to CSV',
+                    className: 'buttons-csv',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                }, 'colvis']
+            });
+
+            // ✅ Page load pe data fetch karein
+            // fetchFilteredData();
+
             // Date range settings
             var dateRangeSettings = {
                 ranges: {
@@ -571,14 +443,13 @@
                     ]
                 },
                 locale: {
-                    format: 'YYYY-MM-DD', // Adjust this according to your date format
+                    format: 'YYYY-MM-DD',
                     applyLabel: 'Apply',
                     cancelLabel: 'Cancel',
                     customRangeLabel: 'Custom Range'
                 }
             };
 
-            // Initialize date range picker
             $('#dashboard_date_filter').daterangepicker(dateRangeSettings, function(start, end) {
                 startDate = start;
                 endDate = end;
@@ -600,7 +471,6 @@
                 sample = $('#sampleFilter').val();
                 batch = $('#batchFilter').val();
                 contract = $('#contract_no').val();
-
                 fetchFilteredData();
             });
 
@@ -610,6 +480,7 @@
                     sample: sample,
                     batch: batch,
                     contract: contract,
+                    limit: 200,
                 };
 
                 if (startDate && endDate) {
@@ -617,15 +488,20 @@
                     data.end_date = endDate.format('YYYY-MM-DD');
                 }
 
+                $('#myTable').show();
+
                 $.ajax({
                     url: '/str-filter',
                     type: 'get',
                     data: data,
+                    beforeSend: function() {
+                        $('#myTable tbody').html(
+                            '<tr><td colspan="10" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>'
+                        );
+                    },
                     success: function(response) {
-                        // console.log(response);
                         $('#myTable').show();
                         updateTable(response);
-
                     },
                     error: function(xhr, status, error) {
                         console.error(xhr.responseText);
@@ -641,10 +517,7 @@
             };
 
             function updateTable(data) {
-                var table = $('.dataTable').DataTable();
-
                 table.clear();
-
                 var rows = [];
 
                 data.forEach(function(item) {
@@ -671,34 +544,29 @@
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
-                        }) :
-                        '--';
+                        }) : '--';
                     const product = item.product ? item.product.name : '--';
-                    const genericNames = item.product ? item.product.generic_names : '--';
-
+                    // const genericNames = item.product ? item.product.generic_names : '--';
+                    const genericNames = item.generic_names ?? '--';
                     const batchCode = item.batch ? item.batch.code : '';
                     const contractNumber = item.contract ? item.contract.number : '';
                     const createdBy = item.created_by || '--';
-
                     const viewUrl = routes.view.replace(':str_no', item.str_no);
-                    const editUrl = routes.edit.replace(':str_no', item.str_no);
-                    const remarkUrl = routes.remark.replace(':str_no', item.str_no);
-                    const logsUrl = routes.logs;
 
                     const actionDropdown = `
-            <button type="button" class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown" aria-expanded="true">
-                Actions <span class="caret"></span><span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-left" role="menu">
-                <li><a class="dropdown-item" href="${viewUrl}"><i class="fa fa-eye"></i> View</a></li>
-            </ul>
-        `;
+                    <button type="button" class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown" aria-expanded="true">
+                        Actions <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                        <li><a class="dropdown-item" href="${viewUrl}"><i class="fa fa-eye"></i> View</a></li>
+                    </ul>
+                `;
 
                     rows.push([
                         `<label class="custom-checkbox">
-                <input class="select-row" name="str_no[]" value="${item.str_no}" type="checkbox">
-                <span class="checkmark"></span>
-            </label>`,
+                        <input class="select-row" name="str_no[]" value="${item.str_no}" type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>`,
                         created_at,
                         product + `<input class="sample" value="${item.sample_id}" type="hidden">`,
                         genericNames,
@@ -709,118 +577,21 @@
                         createdBy,
                         `<span class="label ${status.class}">${status.text}</span>`,
                         `<div class="btn-group">
-                ${item.status === 'approved' || (item.status === 'rejected' && userPermissions.canViewSTR) ? 
-                    `<a class="btn btn-default btn-xs" href="${viewUrl}"><i class="fa fa-eye"></i> View</a>` : 
-                    actionDropdown}
-            </div>`
+                        ${item.status === 'approved' || (item.status === 'rejected' && userPermissions.canViewSTR) ?
+                            `<a class="btn btn-default btn-xs" href="${viewUrl}"><i class="fa fa-eye"></i> View</a>` :
+                            actionDropdown}
+                    </div>`
                     ]);
                 });
 
                 table.rows.add(rows).draw();
             }
 
-        });
-
-
-        $(document).ready(function() {
-            var table = $('.dataTable').DataTable({
-                buttons: [{
-                    extend: 'print',
-                    text: 'Print',
-                    className: 'buttons-print',
-                    exportOptions: {
-                        columns: ':not(.no-print)'
-                    },
-                    customize: function(win) {
-                        logPrintEvent();
-
-                        $(win.document.body).find('h1').remove();
-
-                        var defaultTitle = $('title').text();
-                        var reportTitle = defaultTitle.split(' - ')[0] + ' Report';
-
-                        var pageBreakAdded = false;
-
-                        var header = $(`
-                                <header style="padding: 10px; z-index: 1000;">
-                                    <div class="row header" style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div class="col-md-2 mt-3">
-                                            <img src="{{ asset('dummy/paklogo4.png') }}" width="100px" />
-                                        </div>
-                                        <div class="col-md-8" style="text-align: center;">
-                                            <h4 style="font-weight: bold;">ARMED FORCES MEDICAL STORES LABORATORY</h4>
-                                            <hr style="margin: 5px 0;"> <!-- Add horizontal line here -->
-                                            <h5 style="font-weight: bold;">${reportTitle}</h5> <!-- Add dynamic report title here -->
-                                        </div>
-                                        <div class="col-md-2 mt-3" style="text-align: end;">
-                                            <img src="{{ asset('dummy/AFMS LOGO-01.png') }}" width="110px" />
-                                           
-                                        </div>
-                                    </div>
-                                </header>
-                            `);
-
-                        $(win.document.body).prepend(header);
-
-                        $.get('/get-footer', function(footerContent) {
-                            $(win.document.body).append(footerContent);
-                        });
-
-                        var currentPage = 0;
-                        var rowCount = 0;
-
-                        $(win.document.body).find('table').addClass('print-table');
-                        $(win.document.body).find('.print-table tr').each(function(index) {
-                            rowCount++;
-                            if (rowCount % 16 === 0) {
-                                currentPage++;
-                                $(this).after('<div class="page-break"></div>');
-                                pageBreakAdded =
-                                    true;
-                            }
-                        });
-
-                        if (pageBreakAdded) {
-                            header.css('position', 'fixed');
-                            header.css('left', '0');
-                            header.css('right', '0');
-                            header.css('background-color', '#fff');
-                            $('<style>.print-table { position: relative; top: 150px; bottom: 150px; }</style>')
-                                .appendTo(win.document.head);
-
-                        }
-
-                    }
-                }, {
-                    extend: 'excel',
-                    text: 'Export to Excel',
-                    className: 'buttons-excel',
-                    exportOptions: {
-                        columns: ':not(.no-print)'
-                    }
-                }, {
-                    extend: 'pdf',
-                    text: 'Export to PDF',
-                    className: 'buttons-pdf',
-                    exportOptions: {
-                        columns: ':not(.no-print)'
-                    },
-                }, {
-                    extend: 'csv',
-                    text: 'Export to CSV',
-                    className: 'buttons-csv',
-                    exportOptions: {
-                        columns: ':not(.no-print)'
-                    }
-                }, 'colvis']
-            });
-
             function logPrintEvent() {
                 var defaultTitle = $('title').text();
                 var reportTitle = defaultTitle.split(' - ')[0] + ' Report';
                 var randomID = Math.floor(Math.random() * 100000);
                 var documentID = reportTitle + ' - ' + randomID;
-
                 $.ajax({
                     url: '/print-event',
                     method: 'post',
@@ -834,33 +605,32 @@
                     }
                 });
             }
-        });
 
-        $(document).on('click', '#select-all', function() {
-            var rows = $('#myTable tbody tr:visible');
-            var isChecked = $(this).is(':checked');
-
-            rows.each(function() {
-                var row = $(this);
-                row.find('.select-row').prop('checked', isChecked);
-            });
-        });
-
-        // Export STR as PDF
-        $('#printButton-custom-str').click(function() {
-            const selectedStrNos = [];
-            $('input.select-row:checked').each(function() {
-                selectedStrNos.push($(this).val());
+            // Select all
+            $(document).on('click', '#select-all', function() {
+                var rows = $('#myTable tbody tr:visible');
+                var isChecked = $(this).is(':checked');
+                rows.each(function() {
+                    $(this).find('.select-row').prop('checked', isChecked);
+                });
             });
 
-            if (selectedStrNos.length > 0) {
-                window.location.href = '{{ route('export.str.pdf', ':sample_testing_report') }}'
-                    .replace(':sample_testing_report', selectedStrNos.join(','));
-            } else {
-                toastr.error('Please select at least one to get the STR PDF.');
-            }
+            // Export STR as PDF
+            $('#printButton-custom-str').click(function() {
+                const selectedStrNos = [];
+                $('input.select-row:checked').each(function() {
+                    selectedStrNos.push($(this).val());
+                });
+                if (selectedStrNos.length > 0) {
+                    window.location.href = '{{ route('export.str.pdf', ':sample_testing_report') }}'
+                        .replace(':sample_testing_report', selectedStrNos.join(','));
+                } else {
+                    toastr.error('Please select at least one to get the STR PDF.');
+                }
+            });
         });
     </script>
+
     <script>
         $(document).on('change', '#sampleFilter', function() {
             var sample_id = $(this).val();
@@ -885,6 +655,7 @@
             });
         });
     </script>
+
     <script>
         function loadContracts() {
             var type = $('#contract_type').val();
@@ -909,8 +680,6 @@
                 }
             });
         }
-
-        // Event Listeners
         $(document).on('change', '#contract_type', loadContracts);
         $(document).on('change', '#sampleFilter', loadContracts);
     </script>

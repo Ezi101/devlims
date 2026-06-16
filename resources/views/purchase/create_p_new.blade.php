@@ -547,7 +547,62 @@
                 </table>
             @endcomponent
         </div>
-
+        {{-- Reference Standard Table --}}
+        <div class="col-sm-12" id="standardTableContainer" style="display:none; margin-top:-20px;">
+            @component('components.widget', ['class' => 'box-warning'])
+                <h4 style="margin-bottom:15px;color:#8a6d3b;"><i class="fa fa-flask"></i> Reference Standards</h4>
+                <table class="table table-bordered table-striped" id="standardsTableAdd">
+                    <thead class="bg-gray" style="font-size:12px;">
+                        <tr>
+                            <th>#</th>
+                            <th>Standard Name</th>
+                            <th>Batch No</th>
+                            <th>Potency (%)</th>
+                            <th>Exp Date</th>
+                            <th>Quantity</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="standardTableBody">
+                        <tr>
+                            <td class="std-serial">1</td>
+                            <td>
+                                <select name="standards[1][standard_id]" id="standard_id_1"
+                                    class="form-control select2 standard-select" style="width:100%;font-size:12px;">
+                                    <option value="">Please Select</option>
+                                    @foreach ($standards as $std)
+                                        <option value="{{ $std->id }}" data-batch="{{ $std->batch_no ?? '--' }}"
+                                            data-potency="{{ $std->potency ?? '--' }}"
+                                            data-expiry="{{ $std->expiry_date ?? '--' }}">
+                                            {{ $std->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="standards[1][batch_no]" id="std_batch_1" class="form-control"
+                                    style="font-size:12px;" readonly placeholder="Auto fill">
+                            </td>
+                            <td>
+                                <input type="text" name="standards[1][potency]" id="std_potency_1" class="form-control"
+                                    style="font-size:12px;" readonly placeholder="Auto fill">
+                            </td>
+                            <td>
+                                <input type="text" name="standards[1][expiry_date]" id="std_expiry_1"
+                                    class="form-control" style="font-size:12px;" readonly placeholder="Auto fill">
+                            </td>
+                            <td>
+                                <input type="number" name="standards[1][quantity]" id="std_qty_1" class="form-control"
+                                    min="0" value="0" style="font-size:12px;">
+                            </td>
+                            <td>
+                                <a class="btn btn-sm btn-primary addStandardRow"><i class="fa fa-plus"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            @endcomponent
+        </div>
 
         {{-- SAVE DRAFT ,FORWARD TO AFMSI AND RECEIVED BY AFMSL --}}
         <div class="row">
@@ -566,7 +621,13 @@
                 @can('others.forward_to_2ic')
                     <button type="button" id="forward_to_2ic" class="btn btn-md btn-primary">@lang('lang_v1.forward_to_2ic')</button>
                 @endcan --}}
-
+                {{-- Reference Standard Checkbox --}}
+                <div class="col-sm-12 text-center" style="margin-bottom:10px;">
+                    <label style="font-size:14px; cursor:pointer;">
+                        <input type="checkbox" id="ref_standard_checkbox" name="has_reference_standard" value="1">
+                        &nbsp;<strong>Reference Standard</strong>
+                    </label>
+                </div>
                 @can('purchase.recevied_by_afmsl')
                     <button type="button" id="recevied_by_afmsl" class="btn btn-md btn-success">@lang('lang_v1.recevied_by_afmsl')</button>
                 @endcan
@@ -961,6 +1022,70 @@
                         alert('No product found');
                     }
                 }
+            });
+        });
+        // Standards data from PHP
+        var standardsData = @json($standards->values());
+
+        // Checkbox toggle
+        $('#ref_standard_checkbox').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#standardTableContainer').show();
+            } else {
+                $('#standardTableContainer').hide();
+            }
+        });
+
+        // Standard select pe auto fill
+        $(document).on('change', '.standard-select', function() {
+            var selected = $(this).find('option:selected');
+            var row = $(this).closest('tr');
+            row.find('[name$="[batch_no]"]').val(selected.data('batch') || '--');
+            row.find('[name$="[potency]"]').val(selected.data('potency') || '--');
+            row.find('[name$="[expiry_date]"]').val(selected.data('expiry') || '--');
+        });
+
+        // Add new standard row
+        $(document).on('click', '.addStandardRow', function() {
+            var rowCount = $('#standardTableBody tr').length + 1;
+            var optionsHtml = '<option value="">Please Select</option>';
+            standardsData.forEach(function(std) {
+                optionsHtml += '<option value="' + std.id + '" ' +
+                    'data-batch="' + (std.batch_no || '--') + '" ' +
+                    'data-potency="' + (std.potency || '--') + '" ' +
+                    'data-expiry="' + (std.expiry_date || '--') + '">' +
+                    std.name + '</option>';
+            });
+
+            var newRow = `<tr>
+        <td class="std-serial">${rowCount}</td>
+        <td>
+            <select name="standards[${rowCount}][standard_id]"
+                class="form-control select2 standard-select" style="width:100%;font-size:12px;">
+                ${optionsHtml}
+            </select>
+        </td>
+        <td><input type="text" name="standards[${rowCount}][batch_no]" class="form-control" style="font-size:12px;" readonly placeholder="Auto fill"></td>
+        <td><input type="text" name="standards[${rowCount}][potency]" class="form-control" style="font-size:12px;" readonly placeholder="Auto fill"></td>
+        <td><input type="text" name="standards[${rowCount}][expiry_date]" class="form-control" style="font-size:12px;" readonly placeholder="Auto fill"></td>
+        <td><input type="number" name="standards[${rowCount}][quantity]" class="form-control" min="0" value="0" style="font-size:12px;"></td>
+        <td><a class="btn btn-sm btn-danger remStandardRow"><i class="fa fa-minus"></i></a></td>
+    </tr>`;
+
+            $('#standardTableBody').append(newRow);
+            // Select2 initialize new row
+            $('#standardTableBody tr:last .standard-select').select2();
+            // Serial numbers update
+            $('#standardTableBody tr').each(function(i, row) {
+                $(row).find('.std-serial').text(i + 1);
+            });
+        });
+
+        // Remove standard row
+        $(document).on('click', '.remStandardRow', function() {
+            $(this).closest('tr').remove();
+            $('#standardTableBody tr').each(function(i, row) {
+                $(row).find('.std-serial').text(i + 1);
             });
         });
         // 'sample_results' ke andar kisi bhi 'li' par click ho

@@ -101,6 +101,10 @@
                                 <a href="{{ route('samplegroup.index') }}">
                                     {!! $notification->data['message'] !!}
                                 </a>
+                            @elseif ($notificationType == 'batch_expiry')
+                                <a href="{{ url('batch/expired') }}">
+                                    {!! $notification->data['message'] !!}
+                                </a>
                             @endif
                         </li>
                     @endforeach

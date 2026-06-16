@@ -544,6 +544,51 @@
                                 </tbody>
                             </table>
                         </div>
+                        {{-- Disclaimer Per Batch --}}
+                        <div style="margin-top:15px; border-top:1px solid #ddd; padding-top:10px;">
+                            <h6 style="font-weight:bold; margin-bottom:8px;">Disclaimer</h6>
+
+                            <input type="hidden" id="selected_line_id" value="">
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+
+                                {{-- Batch Dropdown - chota --}}
+                                <div style="flex: 0 0 180px;">
+                                    <select id="disclaimer_batch_select" class="form-control form-control-sm"
+                                        style="font-size:12px;">
+                                        <option value="">-- Select Batch --</option>
+                                        @foreach ($purchase->purchase_lines as $line)
+                                            <option value="{{ $line->id }}"
+                                                data-batch="{{ $line->batch->code ?? 'N/A' }}"
+                                                data-product="{{ $line->product->name ?? '-' }}"
+                                                data-disclaimer="{{ $line->disclaimer ?? '' }}">
+                                                {{ $line->batch->code ?? 'N/A' }} — {{ $line->product->name ?? '-' }}
+                                                {{ !empty($line->disclaimer) ? '✓' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Textarea - saath mein --}}
+                                <div style="flex:1; display:none;" id="disclaimer_text_box">
+                                    <textarea id="disclaimer_text" class="form-control form-control-sm" rows="1" placeholder="Enter disclaimer..."
+                                        style="font-size:12px; resize:none; height:38px; overflow:hidden;"></textarea>
+                                </div>
+
+                                {{-- Save Button --}}
+                                <div id="disclaimer_save_btn" style="display:none; flex-shrink:0;">
+                                    <button type="button" id="saveDisclaimer" class="btn btn-warning btn-sm">
+                                        <i class="fa fa-save"></i> Save
+                                    </button>
+                                    <span id="disclaimer_success"
+                                        style="display:none; color:green; font-size:11px; display:block; margin-top:3px;">
+                                        <i class="fa fa-check"></i> Saved!
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="ref_no" value="{{ $transaction->ref_no }}">
@@ -906,5 +951,86 @@
                 $('<input type="submit">').hide().appendTo(form).click().remove();
             }
         });
+    });
+    // Disclaimer dropdown change
+    $('#disclaimer_batch_select').on('change', function() {
+        var lineId = $(this).val();
+        var disclaimer = $(this).find(':selected').data('disclaimer');
+        var batch = $(this).find(':selected').data('batch');
+
+        if (lineId) {
+            $('#selected_line_id').val(lineId);
+            $('#disclaimer_text').val(disclaimer || '');
+            $('#disclaimer_text').attr('placeholder', 'Enter disclaimer for batch ' + batch + '...');
+            $('#disclaimer_text_box').slideDown(200);
+            $('#disclaimer_save_btn').slideDown(200);
+
+        } else {
+            $('#disclaimer_text_box').slideUp(200);
+            $('#disclaimer_save_btn').slideUp(200);
+        }
+    });
+
+    // Save Disclaimer
+    $('#saveDisclaimer').on('click', function() {
+        var lineId = $('#selected_line_id').val();
+        var text = $('#disclaimer_text').val().trim();
+
+        if (!lineId) {
+            toastr.warning('Please select a batch first.');
+            return;
+        }
+        if (!text) {
+            toastr.warning('Please enter disclaimer text.');
+            return;
+        }
+
+        $('#saveDisclaimer').prop('disabled', true)
+            .html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+
+        $.ajax({
+            url: '{{ route('purchases.save-disclaimer') }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                line_id: lineId,
+                disclaimer: text
+            },
+            success: function(response) {
+                if (response.success) {
+                    var option = $('#disclaimer_batch_select option[value="' + lineId + '"]');
+                    option.data('disclaimer', text);
+                    if (option.text().indexOf('✓') === -1) {
+                        option.text(option.text() + ' ✓');
+                    }
+                    $('#disclaimer_success').fadeIn().delay(2000).fadeOut();
+                    toastr.success(response.msg);
+                } else {
+                    toastr.error(response.msg);
+                }
+            },
+            error: function() {
+                toastr.error('Something went wrong. Please try again.');
+            },
+            complete: function() {
+                $('#saveDisclaimer').prop('disabled', false)
+                    .html('<i class="fa fa-save"></i> Save Disclaimer');
+            }
+        });
+    });
+
+    // File input change — dynamic rows ke liye
+    $(document).on('change', '.file-input', function() {
+        var files = this.files;
+        var fileNamesContainer = $(this).siblings('.file-names')[0];
+        if (files.length === 0) {
+            fileNamesContainer.textContent = '';
+        } else {
+            var fileNames = [];
+            for (var i = 0; i < files.length; i++) {
+                fileNames.push(files[i].name);
+            }
+            fileNamesContainer.textContent = fileNames.join(', ');
+        }
     });
 </script>
