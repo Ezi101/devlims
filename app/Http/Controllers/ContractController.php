@@ -732,39 +732,37 @@ class ContractController extends Controller
                 }
             }
         }
-        // STR Date fetch karo installment wise
+
         $strRecords = DB::table('s_t_r')
             ->where('contract_no', $contract->id)
             ->where('status', 'approved')
             ->select('approved_at', 'batch_no')
             ->get();
+        // dd($strRecords);
 
         foreach ($strRecords as $str) {
-            if (empty($str->approved_at)) continue;
+            if (empty($str->approved_at) || empty($str->batch_no)) continue;
 
-            // Direct purchaselines se batch_no se transaction dhundo
             $purchaseLine = DB::table('purchase_lines')
-                ->where('batch_no', $str->batch_no)
+                ->where('batch_no', intval($str->batch_no))
                 ->whereNotNull('transaction_id')
+                ->whereNotNull('instalments')
                 ->first();
 
-            if ($purchaseLine) {
-                $txn = DB::table('transactions')
-                    ->where('id', $purchaseLine->transaction_id)
-                    ->where('contract_no', $contract->id)
-                    ->select('instalments')
-                    ->first();
+            if ($purchaseLine && $purchaseLine->instalments) {
+                $instNum = str_replace('instalments_', '', $purchaseLine->instalments);
 
-                if ($txn && $txn->instalments) {
-                    $instNum = str_replace('instalments_', '', $txn->instalments);
-                    if (isset($installmentDates[$instNum])) {
-                        $installmentDates[$instNum]['str_date'] = date('Y-m-d', strtotime($str->approved_at));
-                    }
+                // Agar installmentDates mein key nahi hai toh initialize karo
+                if (!isset($installmentDates[$instNum])) {
+                    $installmentDates[$instNum] = [];
                 }
+
+                $installmentDates[$instNum]['str_date'] = date('Y-m-d', strtotime($str->approved_at));
             }
         }
-
+        // dd($installmentDates);
         $contract->installment_dates = $installmentDates;
+        // dd($contract->installment_dates);
 
 
         return view('contract.edit', compact(
@@ -772,7 +770,7 @@ class ContractController extends Controller
             'suppliers',
             'fiscal_years',
             'installmentDates',
-            'transactions'  // ✅ transactions pass karo
+            'transactions'
         ));
     }
     // public function dashboard(Contract $contract)

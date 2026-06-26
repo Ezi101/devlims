@@ -489,7 +489,7 @@
     use App\User;
 
     $rowCount = 0;
-    $maxRowsFirstPage = 9;
+    $maxRowsFirstPage = 7;
     $maxRowsSubsequent = 15;
 
     // Calculate total rows for page numbering
@@ -584,9 +584,8 @@
             <div class="col-md-8 mt-3" style="text-align: center;">
                 <h4>ARMED FORCES MEDICAL STORES LABORATORY</h4>
                 <h4>(AFMSL) Chaklala / Rawalpindi</h4>
-                <h5 style="font-weight: bold; text-decoration: underline;margin-top:12px; font-size:15px;">SAMPLE TEST
+                <h5 style="font-weight: bold; text-decoration: underline;margin-top:9px; font-size:15px;">SAMPLE TEST
                     REPORT</h5>
-
             </div>
 
 
