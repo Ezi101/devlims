@@ -1728,7 +1728,7 @@ class AdminSidebarMenu
                         //         ['icon' => '', 'active' => request()->segment(2) == 'service-staff-report']
                         //     );
                         // }
-                        if (auth()->user()->can('itd_report.view')) {
+                        if (auth()->user()->can('contract.view')) {
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'itdReport']),
                                 __('eplanner.itd_report'),

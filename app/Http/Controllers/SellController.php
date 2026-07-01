@@ -4815,7 +4815,7 @@ class SellController extends Controller
 
     public function itdReport()
     {
-        if (!auth()->user()->can('itd_report.view')) {
+        if (!auth()->user()->can('contract.view')) {
             abort(403, 'Unauthorized action.');
         }
         return view('sell.itd_report');
@@ -5034,7 +5034,7 @@ class SellController extends Controller
     public function itdSummaryTable(Request $request)
     {
         try {
-            if (!auth()->user()->can('itd_report.view')) {
+            if (!auth()->user()->can('contract.view')) {
                 abort(403, 'Unauthorized action.');
             }
 
