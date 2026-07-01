@@ -1963,7 +1963,13 @@ class AdminSidebarMenu
                     __('lang_v1.master_record'),
                     function ($sub) use ($enabled_modules) {
 
-
+                        if (auth()->user()->can('contract.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\SellController::class, 'itdReport']),
+                                __('eplanner.itd_report'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'itd_report' && request()->segment(2) == '']
+                            );
+                        }
                         if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own')) {
                             $sub->url(
                                 action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'supplier']),
